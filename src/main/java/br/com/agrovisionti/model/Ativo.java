@@ -1,0 +1,117 @@
+package br.com.agrovisionti.model;
+
+import java.sql.Timestamp;
+
+public class Ativo {
+
+    private int id;
+    private String tipo;
+    private String marca;
+    private String modelo;
+    private String numeroSerie;
+    private String unidade;
+    private String responsavel;
+    private String status;
+    private String observacoes;
+    private Timestamp dataCadastro;
+
+    public Ativo() {
+    }
+
+    public Ativo(int id, String tipo, String marca, String modelo,
+                 String numeroSerie, String unidade,
+                 String responsavel, String status,
+                 String observacoes, Timestamp dataCadastro) {
+
+        this.id = id;
+        this.tipo = tipo;
+        this.marca = marca;
+        this.modelo = modelo;
+        this.numeroSerie = numeroSerie;
+        this.unidade = unidade;
+        this.responsavel = responsavel;
+        this.status = status;
+        this.observacoes = observacoes;
+        this.dataCadastro = dataCadastro;
+    }
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public String getTipo() {
+        return tipo;
+    }
+
+    public void setTipo(String tipo) {
+        this.tipo = tipo;
+    }
+
+    public String getMarca() {
+        return marca;
+    }
+
+    public void setMarca(String marca) {
+        this.marca = marca;
+    }
+
+    public String getModelo() {
+        return modelo;
+    }
+
+    public void setModelo(String modelo) {
+        this.modelo = modelo;
+    }
+
+    public String getNumeroSerie() {
+        return numeroSerie;
+    }
+
+    public void setNumeroSerie(String numeroSerie) {
+        this.numeroSerie = numeroSerie;
+    }
+
+    public String getUnidade() {
+        return unidade;
+    }
+
+    public void setUnidade(String unidade) {
+        this.unidade = unidade;
+    }
+
+    public String getResponsavel() {
+        return responsavel;
+    }
+
+    public void setResponsavel(String responsavel) {
+        this.responsavel = responsavel;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getObservacoes() {
+        return observacoes;
+    }
+
+    public void setObservacoes(String observacoes) {
+        this.observacoes = observacoes;
+    }
+
+    public Timestamp getDataCadastro() {
+        return dataCadastro;
+    }
+
+    public void setDataCadastro(Timestamp dataCadastro) {
+        this.dataCadastro = dataCadastro;
+    }
+}
