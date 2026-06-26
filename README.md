@@ -97,11 +97,6 @@ O sistema utiliza **MySQL** como banco de dados.
 
 ---
 
-# ▶ Como Executar
-
-### Clone o repositório
-
-
 # 👨‍💻 Autor
 
 **João Gabriel Romanin Seti**
