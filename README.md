@@ -101,31 +101,6 @@ O sistema utiliza **MySQL** como banco de dados.
 
 ### Clone o repositório
 
-```bash
-git clone https://github.com/Joaormn7/AgroVisionTI.git
-```
-
-### Abra o projeto no IntelliJ IDEA
-
-O projeto utiliza **Maven**, portanto as dependências serão baixadas automaticamente.
-
-### Configure o banco MySQL
-
-Crie um banco chamado:
-
-```sql
-CREATE DATABASE agrovisionti;
-```
-
-Configure os dados de conexão na classe:
-
-```
-connection/Conexao.java
-```
-
-Execute os scripts SQL para criação das tabelas.
-
----
 
 # 👨‍💻 Autor
 
