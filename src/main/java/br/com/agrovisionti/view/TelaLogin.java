@@ -104,7 +104,7 @@ public class TelaLogin extends JFrame {
 
                 dispose();
 
-                new TelaDashboard();
+                new TelaPrincipal();
 
             } else {
 

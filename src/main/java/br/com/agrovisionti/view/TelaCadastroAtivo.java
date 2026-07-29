@@ -7,8 +7,8 @@ import javax.swing.*;
 import java.awt.*;
 
 public class TelaCadastroAtivo extends JDialog {
-    private final TelaAtivos telaAtivos;
     private final AtivoDAO ativoDAO = new AtivoDAO();
+    private final Runnable aoSalvar;
     private Ativo ativoEmEdicao;
 
     private JTextField txtTipo;
@@ -20,14 +20,29 @@ public class TelaCadastroAtivo extends JDialog {
     private JComboBox<String> cbStatus;
     private JTextArea txtObservacoes;
 
+    // ===== Uso a partir da tela antiga (TelaAtivos como janela própria) =====
     public TelaCadastroAtivo(TelaAtivos telaAtivos) {
-        this(telaAtivos, null);
+        this(telaAtivos, null, telaAtivos::carregarTabela);
     }
 
     public TelaCadastroAtivo(TelaAtivos telaAtivos, Ativo ativo) {
-        super(telaAtivos, true);
-        this.telaAtivos = telaAtivos;
+        this(telaAtivos, ativo, telaAtivos::carregarTabela);
+    }
+
+    // ===== Uso a partir do novo PainelAtivos (embutido no CardLayout) =====
+    public TelaCadastroAtivo(Window janelaProprietaria, PainelAtivos painelAtivos) {
+        this(janelaProprietaria, null, painelAtivos::carregarTabela);
+    }
+
+    public TelaCadastroAtivo(Window janelaProprietaria, PainelAtivos painelAtivos, Ativo ativo) {
+        this(janelaProprietaria, ativo, painelAtivos::carregarTabela);
+    }
+
+    // ===== Construtor mestre: não sabe (nem precisa saber) quem é o chamador =====
+    private TelaCadastroAtivo(Window janelaProprietaria, Ativo ativo, Runnable aoSalvar) {
+        super(janelaProprietaria, Dialog.ModalityType.APPLICATION_MODAL);
         this.ativoEmEdicao = ativo;
+        this.aoSalvar = aoSalvar;
 
         setTitle(ativo == null ? "Novo Ativo" : "Editar Ativo");
         setSize(720, 610);
@@ -172,7 +187,7 @@ public class TelaCadastroAtivo extends JDialog {
             JOptionPane.showMessageDialog(this, "Ativo atualizado com sucesso.");
         }
 
-        telaAtivos.carregarTabela();
+        aoSalvar.run();
         dispose();
     }
 

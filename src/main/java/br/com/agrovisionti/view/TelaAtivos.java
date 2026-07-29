@@ -17,6 +17,7 @@ public class TelaAtivos extends JFrame {
     private JButton btnNovo;
     private JButton btnEditar;
     private JButton btnExcluir;
+    private JButton btnHistorico;
     private JButton btnAtualizar;
     private JButton btnVoltar;
 
@@ -82,11 +83,13 @@ public class TelaAtivos extends JFrame {
         btnNovo = new JButton("Novo Ativo");
         btnEditar = new JButton("Editar");
         btnExcluir = new JButton("Excluir");
+        btnHistorico = new JButton("Ver Histórico");
         btnAtualizar = new JButton("Atualizar");
 
         botoes.add(btnNovo);
         botoes.add(btnEditar);
         botoes.add(btnExcluir);
+        botoes.add(btnHistorico);
         botoes.add(btnAtualizar);
 
         JPanel linha = new JPanel(new BorderLayout());
@@ -139,6 +142,7 @@ public class TelaAtivos extends JFrame {
         btnNovo.addActionListener(e -> new TelaCadastroAtivo(this));
         btnEditar.addActionListener(e -> editarAtivoSelecionado());
         btnExcluir.addActionListener(e -> excluirAtivoSelecionado());
+        btnHistorico.addActionListener(e -> verHistoricoSelecionado());
         btnAtualizar.addActionListener(e -> carregarTabela());
 
         txtPesquisa.getDocument().addDocumentListener(new DocumentListener() {
@@ -220,5 +224,13 @@ public class TelaAtivos extends JFrame {
             carregarTabela();
             JOptionPane.showMessageDialog(this, "Ativo excluído com sucesso.");
         }
+    }
+
+    private void verHistoricoSelecionado() {
+        int id = obterIdSelecionado();
+
+        if (id == -1) return;
+
+        new TelaHistorico(id);
     }
 }

@@ -11,7 +11,7 @@ import java.awt.*;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
-public class TelaMovimentacoes extends JFrame {
+public class PainelMovimentacoes extends JPanel {
 
     private final MovimentacaoDAO movimentacaoDAO = new MovimentacaoDAO();
     private final AtivoDAO ativoDAO = new AtivoDAO();
@@ -19,44 +19,23 @@ public class TelaMovimentacoes extends JFrame {
 
     private JButton btnNovaMovimentacao;
     private JButton btnAtualizar;
-    private JButton btnVoltar;
 
     private JTable tabela;
     private DefaultTableModel modeloTabela;
     private JLabel lblQuantidade;
 
-    public TelaMovimentacoes() {
-        setTitle("AgroVisionTI - Movimentações");
-        setSize(1200, 720);
-        setLocationRelativeTo(null);
-        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
-        setResizable(false);
+    public PainelMovimentacoes() {
+        setLayout(new BorderLayout());
+        setBackground(new Color(245, 247, 250));
         criarComponentes();
         configurarEventos();
         carregarTabela();
-        setVisible(true);
     }
 
     private void criarComponentes() {
-        JPanel raiz = new JPanel(new BorderLayout());
-        raiz.setBackground(new Color(245, 247, 250));
-
-        JPanel topo = new JPanel(new BorderLayout());
-        topo.setBackground(new Color(37, 99, 235));
-        topo.setBorder(BorderFactory.createEmptyBorder(16, 28, 16, 28));
-
-        JLabel tituloTopo = new JLabel("AgroVisionTI - Movimentações");
-        tituloTopo.setForeground(Color.WHITE);
-        tituloTopo.setFont(new Font("Segoe UI", Font.BOLD, 23));
-
-        btnVoltar = new JButton("Voltar");
-
-        topo.add(tituloTopo, BorderLayout.WEST);
-        topo.add(btnVoltar, BorderLayout.EAST);
-
         JPanel conteudo = new JPanel(new BorderLayout(0, 18));
         conteudo.setBackground(new Color(245, 247, 250));
-        conteudo.setBorder(BorderFactory.createEmptyBorder(26, 40, 20, 40));
+        conteudo.setBorder(BorderFactory.createEmptyBorder(26, 32, 20, 32));
 
         JPanel areaSuperior = new JPanel(new BorderLayout(20, 14));
         areaSuperior.setOpaque(false);
@@ -102,22 +81,18 @@ public class TelaMovimentacoes extends JFrame {
         conteudo.add(scroll, BorderLayout.CENTER);
 
         JPanel rodape = new JPanel(new BorderLayout());
-        rodape.setBorder(BorderFactory.createEmptyBorder(12, 40, 18, 40));
+        rodape.setBorder(BorderFactory.createEmptyBorder(12, 32, 12, 32));
         rodape.setBackground(new Color(245, 247, 250));
 
         lblQuantidade = new JLabel("0 movimentações registradas");
         lblQuantidade.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         rodape.add(lblQuantidade, BorderLayout.WEST);
 
-        raiz.add(topo, BorderLayout.NORTH);
-        raiz.add(conteudo, BorderLayout.CENTER);
-        raiz.add(rodape, BorderLayout.SOUTH);
-
-        add(raiz);
+        add(conteudo, BorderLayout.CENTER);
+        add(rodape, BorderLayout.SOUTH);
     }
 
     private void configurarEventos() {
-        btnVoltar.addActionListener(e -> dispose());
         btnNovaMovimentacao.addActionListener(e -> new TelaCadastroMovimentacao(this));
         btnAtualizar.addActionListener(e -> carregarTabela());
     }
