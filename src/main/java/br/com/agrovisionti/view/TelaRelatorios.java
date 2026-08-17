@@ -1,8 +1,10 @@
 package br.com.agrovisionti.view;
 
 import br.com.agrovisionti.dao.AtivoDAO;
+import br.com.agrovisionti.dao.ColaboradorDAO;
 import br.com.agrovisionti.dao.MovimentacaoDAO;
 import br.com.agrovisionti.model.Ativo;
+import br.com.agrovisionti.model.Colaborador;
 
 import javax.swing.*;
 import java.awt.*;
@@ -18,6 +20,7 @@ public class TelaRelatorios extends JFrame {
 
     private final AtivoDAO ativoDAO = new AtivoDAO();
     private final MovimentacaoDAO movimentacaoDAO = new MovimentacaoDAO();
+    private final ColaboradorDAO colaboradorDAO = new ColaboradorDAO();
 
     public TelaRelatorios() {
         setTitle("AgroVisionTI - Relatórios");
@@ -154,6 +157,16 @@ public class TelaRelatorios extends JFrame {
         return contagem;
     }
 
+    private String descreverColaborador(Integer colaboradorId) {
+        if (colaboradorId == null) {
+            return "-";
+        }
+
+        Colaborador colaborador = colaboradorDAO.buscarPorId(colaboradorId);
+
+        return colaborador != null ? colaborador.getNome() : "Colaborador #" + colaboradorId;
+    }
+
     private void exportarCsv(List<Ativo> ativos) {
         JFileChooser seletor = new JFileChooser();
         seletor.setSelectedFile(new File("relatorio_ativos.csv"));
@@ -170,7 +183,8 @@ public class TelaRelatorios extends JFrame {
             for (Ativo ativo : ativos) {
                 escritor.write(String.format("%d;%s;%s;%s;%s;%s;%s;%s%n",
                         ativo.getId(), ativo.getTipo(), ativo.getMarca(), ativo.getModelo(),
-                        ativo.getNumeroSerie(), ativo.getUnidade(), ativo.getResponsavel(), ativo.getStatus()));
+                        ativo.getNumeroSerie(), ativo.getUnidade(),
+                        descreverColaborador(ativo.getResponsavelId()), ativo.getStatus()));
             }
 
             JOptionPane.showMessageDialog(this, "Relatório exportado com sucesso!");

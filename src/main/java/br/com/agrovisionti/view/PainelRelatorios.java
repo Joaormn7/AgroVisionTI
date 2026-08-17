@@ -1,8 +1,10 @@
 package br.com.agrovisionti.view;
 
 import br.com.agrovisionti.dao.AtivoDAO;
+import br.com.agrovisionti.dao.ColaboradorDAO;
 import br.com.agrovisionti.dao.MovimentacaoDAO;
 import br.com.agrovisionti.model.Ativo;
+import br.com.agrovisionti.model.Colaborador;
 import br.com.agrovisionti.model.Movimentacao;
 
 import javax.swing.*;
@@ -31,6 +33,7 @@ public class PainelRelatorios extends JPanel {
 
     private final AtivoDAO ativoDAO = new AtivoDAO();
     private final MovimentacaoDAO movimentacaoDAO = new MovimentacaoDAO();
+    private final ColaboradorDAO colaboradorDAO = new ColaboradorDAO();
 
     private JTextField txtPesquisaHistorico;
     private JTextField txtDataInicio;
@@ -395,7 +398,7 @@ public class PainelRelatorios extends JPanel {
                     descreverAtivo(mov.getAtivoId()),
                     mov.getUnidadeOrigem(),
                     mov.getUnidadeDestino(),
-                    mov.getResponsavelDestino(),
+                    descreverColaborador(mov.getResponsavelDestinoId()),
                     mov.getDataMovimentacao() != null ? mov.getDataMovimentacao().format(FORMATO_EXIBICAO) : "-",
                     mov.getObservacoes()
             });
@@ -471,6 +474,16 @@ public class PainelRelatorios extends JPanel {
         return ativo.getTipo() + " - " + ativo.getMarca() + " " + ativo.getModelo();
     }
 
+    private String descreverColaborador(Integer colaboradorId) {
+        if (colaboradorId == null) {
+            return "-";
+        }
+
+        Colaborador colaborador = colaboradorDAO.buscarPorId(colaboradorId);
+
+        return colaborador != null ? colaborador.getNome() : "Colaborador #" + colaboradorId;
+    }
+
     private Map<String, Integer> contarPorCampo(List<Ativo> ativos, Function<Ativo, String> extrator) {
         Map<String, Integer> contagem = new LinkedHashMap<>();
 
@@ -498,7 +511,8 @@ public class PainelRelatorios extends JPanel {
             for (Ativo ativo : ativos) {
                 escritor.write(String.format("%d;%s;%s;%s;%s;%s;%s;%s%n",
                         ativo.getId(), ativo.getTipo(), ativo.getMarca(), ativo.getModelo(),
-                        ativo.getNumeroSerie(), ativo.getUnidade(), ativo.getResponsavel(), ativo.getStatus()));
+                        ativo.getNumeroSerie(), ativo.getUnidade(),
+                        descreverColaborador(ativo.getResponsavelId()), ativo.getStatus()));
             }
 
             JOptionPane.showMessageDialog(this, "Relatório exportado com sucesso!");
