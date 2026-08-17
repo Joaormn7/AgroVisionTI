@@ -29,7 +29,7 @@ public class GraficoBarraPanel extends JPanel {
         int margemSuperior = 40;
         int margemLateral = 20;
 
-        g2.setColor(new Color(30, 41, 59));
+        g2.setColor(Cores.TITULO);
         g2.setFont(new Font("Segoe UI", Font.BOLD, 15));
         g2.drawString(titulo, margemLateral, 22);
 
@@ -44,10 +44,12 @@ public class GraficoBarraPanel extends JPanel {
 
         int quantidadeBarras = dados.size();
         int areaUtil = largura - (margemLateral * 2);
-        int larguraBarra = Math.max(30, areaUtil / quantidadeBarras - 20);
+        int larguraMaximaPorBarra = 90;
+        int larguraBarra = Math.min(larguraMaximaPorBarra, Math.max(30, areaUtil / quantidadeBarras - 20));
         int alturaMaxima = altura - margemInferior - margemSuperior;
 
-        int x = margemLateral + 10;
+        int larguraTotalUsada = quantidadeBarras * larguraBarra + (quantidadeBarras - 1) * 20;
+        int x = margemLateral + Math.max(0, (areaUtil - larguraTotalUsada) / 2);
         g2.setFont(new Font("Segoe UI", Font.PLAIN, 12));
 
         for (Map.Entry<String, Integer> entrada : dados.entrySet()) {
@@ -58,7 +60,7 @@ public class GraficoBarraPanel extends JPanel {
             g2.setColor(corBarra);
             g2.fillRoundRect(x, y, larguraBarra, alturaBarra, 8, 8);
 
-            g2.setColor(new Color(30, 41, 59));
+            g2.setColor(Cores.TITULO);
             String valorTexto = String.valueOf(valor);
             int larguraTexto = g2.getFontMetrics().stringWidth(valorTexto);
             g2.drawString(valorTexto, x + (larguraBarra - larguraTexto) / 2, y - 6);

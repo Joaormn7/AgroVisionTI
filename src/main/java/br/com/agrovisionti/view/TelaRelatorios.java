@@ -34,7 +34,7 @@ public class TelaRelatorios extends JFrame {
         raiz.setBackground(new Color(245, 247, 250));
 
         JPanel topo = new JPanel(new BorderLayout());
-        topo.setBackground(new Color(37, 99, 235));
+        topo.setBackground(new Color(5, 150, 105));
         topo.setBorder(BorderFactory.createEmptyBorder(16, 28, 16, 28));
 
         JLabel tituloTopo = new JLabel("AgroVisionTI - Relatórios");
@@ -110,7 +110,7 @@ public class TelaRelatorios extends JFrame {
 
         JLabel lblValor = new JLabel(valor);
         lblValor.setFont(new Font("Segoe UI", Font.BOLD, 26));
-        lblValor.setForeground(new Color(37, 99, 235));
+        lblValor.setForeground(new Color(5, 150, 105));
 
         JLabel lblRotulo = new JLabel(rotulo);
         lblRotulo.setFont(new Font("Segoe UI", Font.PLAIN, 13));
@@ -131,7 +131,7 @@ public class TelaRelatorios extends JFrame {
         Map<String, Integer> porStatus = contarPorCampo(ativos, Ativo::getStatus);
         Map<String, Integer> porUnidade = contarPorCampo(ativos, Ativo::getUnidade);
 
-        GraficoBarraPanel graficoStatus = new GraficoBarraPanel("Ativos por Status", porStatus, new Color(37, 99, 235));
+        GraficoBarraPanel graficoStatus = new GraficoBarraPanel("Ativos por Status", porStatus, new Color(5, 150, 105));
         GraficoBarraPanel graficoUnidade = new GraficoBarraPanel("Ativos por Unidade", porUnidade, new Color(16, 185, 129));
 
         graficoStatus.setBorder(BorderFactory.createLineBorder(new Color(226, 232, 240)));

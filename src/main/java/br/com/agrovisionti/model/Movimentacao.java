@@ -8,8 +8,8 @@ public class Movimentacao {
     private int ativoId;
     private String unidadeOrigem;
     private String unidadeDestino;
-    private String responsavelOrigem;
-    private String responsavelDestino;
+    private Integer responsavelOrigemId;
+    private int responsavelDestinoId;
     private LocalDateTime dataMovimentacao;
     private String observacoes;
 
@@ -17,12 +17,12 @@ public class Movimentacao {
     }
 
     public Movimentacao(int ativoId, String unidadeOrigem, String unidadeDestino,
-                        String responsavelOrigem, String responsavelDestino, String observacoes) {
+                        Integer responsavelOrigemId, int responsavelDestinoId, String observacoes) {
         this.ativoId = ativoId;
         this.unidadeOrigem = unidadeOrigem;
         this.unidadeDestino = unidadeDestino;
-        this.responsavelOrigem = responsavelOrigem;
-        this.responsavelDestino = responsavelDestino;
+        this.responsavelOrigemId = responsavelOrigemId;
+        this.responsavelDestinoId = responsavelDestinoId;
         this.observacoes = observacoes;
     }
 
@@ -58,20 +58,20 @@ public class Movimentacao {
         this.unidadeDestino = unidadeDestino;
     }
 
-    public String getResponsavelOrigem() {
-        return responsavelOrigem;
+    public Integer getResponsavelOrigemId() {
+        return responsavelOrigemId;
     }
 
-    public void setResponsavelOrigem(String responsavelOrigem) {
-        this.responsavelOrigem = responsavelOrigem;
+    public void setResponsavelOrigemId(Integer responsavelOrigemId) {
+        this.responsavelOrigemId = responsavelOrigemId;
     }
 
-    public String getResponsavelDestino() {
-        return responsavelDestino;
+    public int getResponsavelDestinoId() {
+        return responsavelDestinoId;
     }
 
-    public void setResponsavelDestino(String responsavelDestino) {
-        this.responsavelDestino = responsavelDestino;
+    public void setResponsavelDestinoId(int responsavelDestinoId) {
+        this.responsavelDestinoId = responsavelDestinoId;
     }
 
     public LocalDateTime getDataMovimentacao() {

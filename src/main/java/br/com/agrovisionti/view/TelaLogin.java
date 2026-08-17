@@ -1,9 +1,10 @@
 package br.com.agrovisionti.view;
 
 import br.com.agrovisionti.dao.UsuarioDAO;
+import br.com.agrovisionti.model.Usuario;
+
 import javax.swing.*;
 import java.awt.*;
-import br.com.agrovisionti.model.Usuario;
 
 public class TelaLogin extends JFrame {
     private JTextField txtEmail;
@@ -23,7 +24,7 @@ public class TelaLogin extends JFrame {
 
     private void criarComponentes() {
         JPanel painel = new JPanel(new GridBagLayout());
-        painel.setBackground(new Color(245, 247, 250));
+        painel.setBackground(Cores.FUNDO);
 
         JPanel card = new JPanel(new GridBagLayout());
         card.setBackground(Color.WHITE);
@@ -36,7 +37,7 @@ public class TelaLogin extends JFrame {
 
         JLabel titulo = new JLabel("AgroVisionTI", SwingConstants.CENTER);
         titulo.setFont(new Font("Segoe UI", Font.BOLD, 30));
-        titulo.setForeground(new Color(37, 99, 235));
+        titulo.setForeground(Cores.PRIMARIA);
         gbc.gridy = 0;
         card.add(titulo, gbc);
 
@@ -73,6 +74,13 @@ public class TelaLogin extends JFrame {
         btnEntrar = new JButton("Entrar");
         btnSair = new JButton("Sair");
 
+        btnEntrar.setBackground(Cores.PRIMARIA);
+        btnEntrar.setForeground(Color.WHITE);
+        btnEntrar.setFont(new Font("Segoe UI", Font.BOLD, 14));
+        btnEntrar.setFocusPainted(false);
+        btnEntrar.setOpaque(true);
+        btnEntrar.setBorderPainted(false);
+
         botoes.add(btnEntrar);
         botoes.add(btnSair);
 
@@ -99,12 +107,13 @@ public class TelaLogin extends JFrame {
 
         try {
             UsuarioDAO dao = new UsuarioDAO();
+            Usuario usuario = dao.autenticar(email, senha);
 
-            if (dao.validarLogin(email, senha)) {
+            if (usuario != null) {
 
                 dispose();
 
-                new TelaPrincipal();
+                new TelaPrincipal(usuario);
 
             } else {
 

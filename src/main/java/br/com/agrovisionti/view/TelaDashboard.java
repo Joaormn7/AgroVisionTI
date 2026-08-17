@@ -17,8 +17,8 @@ import java.util.stream.Collectors;
 
 public class TelaDashboard extends JFrame {
 
-    private static final Color COR_SIDEBAR = new Color(30, 41, 59);
-    private static final Color COR_SIDEBAR_ITEM_ATIVO = new Color(51, 65, 85);
+    private static final Color COR_SIDEBAR = new Color(6, 46, 33);
+    private static final Color COR_SIDEBAR_ITEM_ATIVO = new Color(5, 150, 105);
     private static final Color COR_TEXTO_SIDEBAR = new Color(203, 213, 225);
     private static final Color COR_FUNDO = new Color(245, 247, 250);
     private static final Color COR_BORDA = new Color(226, 232, 240);
@@ -26,10 +26,11 @@ public class TelaDashboard extends JFrame {
     private static final Color COR_SUBTITULO = new Color(100, 116, 139);
 
     private static final Color COR_DISPONIVEL = new Color(34, 197, 94);
-    private static final Color COR_EM_USO = new Color(37, 99, 235);
+    private static final Color COR_EM_USO = new Color(101, 163, 13);
     private static final Color COR_MANUTENCAO = new Color(239, 68, 68);
     private static final Color COR_AGUARDANDO = new Color(245, 158, 11);
     private static final Color COR_TOTAL = new Color(100, 116, 139);
+    private static final Color COR_PRIMARIA = new Color(5, 150, 105);
 
     private final AtivoDAO ativoDAO = new AtivoDAO();
     private final MovimentacaoDAO movimentacaoDAO = new MovimentacaoDAO();
@@ -337,7 +338,7 @@ public class TelaDashboard extends JFrame {
         JProgressBar barra = new JProgressBar(0, maior);
         barra.setValue(quantidade);
         barra.setStringPainted(false);
-        barra.setForeground(COR_EM_USO);
+        barra.setForeground(COR_PRIMARIA);
         barra.setBackground(COR_BORDA);
         barra.setBorderPainted(false);
         barra.setPreferredSize(new Dimension(100, 8));

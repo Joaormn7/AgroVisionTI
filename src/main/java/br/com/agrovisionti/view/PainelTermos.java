@@ -2,10 +2,10 @@ package br.com.agrovisionti.view;
 
 import br.com.agrovisionti.dao.AtivoDAO;
 import br.com.agrovisionti.dao.ColaboradorDAO;
-import br.com.agrovisionti.dao.MovimentacaoDAO;
+import br.com.agrovisionti.dao.TermoDAO;
 import br.com.agrovisionti.model.Ativo;
 import br.com.agrovisionti.model.Colaborador;
-import br.com.agrovisionti.model.Movimentacao;
+import br.com.agrovisionti.model.Termo;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
@@ -13,22 +13,25 @@ import java.awt.*;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
 
-public class PainelMovimentacoes extends JPanel {
+public class PainelTermos extends JPanel {
 
-    private final MovimentacaoDAO movimentacaoDAO = new MovimentacaoDAO();
+    private final TermoDAO termoDAO = new TermoDAO();
     private final AtivoDAO ativoDAO = new AtivoDAO();
     private final ColaboradorDAO colaboradorDAO = new ColaboradorDAO();
+    private final Window janelaProprietaria;
     private final boolean podeEditar;
     private static final DateTimeFormatter FORMATO_DATA = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
-    private JButton btnNovaMovimentacao;
+    private JButton btnNovoTermo;
+    private JButton btnMarcarAssinado;
     private JButton btnAtualizar;
 
     private JTable tabela;
     private DefaultTableModel modeloTabela;
     private JLabel lblQuantidade;
 
-    public PainelMovimentacoes(boolean podeEditar) {
+    public PainelTermos(Window janelaProprietaria, boolean podeEditar) {
+        this.janelaProprietaria = janelaProprietaria;
         this.podeEditar = podeEditar;
         setLayout(new BorderLayout());
         setBackground(Cores.FUNDO);
@@ -45,33 +48,31 @@ public class PainelMovimentacoes extends JPanel {
         JPanel areaSuperior = new JPanel(new BorderLayout(20, 14));
         areaSuperior.setOpaque(false);
 
-        JLabel titulo = new JLabel("Histórico de Movimentações");
+        JLabel titulo = new JLabel("Termos de Responsabilidade");
         titulo.setFont(new Font("Segoe UI", Font.BOLD, 26));
         titulo.setForeground(Cores.TITULO);
 
         JPanel botoes = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 0));
         botoes.setOpaque(false);
 
-        btnNovaMovimentacao = new JButton("Nova Movimentação");
+        btnNovoTermo = new JButton("Novo Termo");
+        btnMarcarAssinado = new JButton("Marcar como Assinado");
         btnAtualizar = new JButton("Atualizar");
 
-        botoes.add(btnNovaMovimentacao);
+        botoes.add(btnNovoTermo);
+        botoes.add(btnMarcarAssinado);
         botoes.add(btnAtualizar);
 
         if (!podeEditar) {
-            btnNovaMovimentacao.setEnabled(false);
+            btnNovoTermo.setEnabled(false);
+            btnMarcarAssinado.setEnabled(false);
         }
 
-        JPanel linha = new JPanel(new BorderLayout());
-        linha.setOpaque(false);
-        linha.add(botoes, BorderLayout.EAST);
-
-        areaSuperior.add(titulo, BorderLayout.NORTH);
-        areaSuperior.add(linha, BorderLayout.SOUTH);
+        areaSuperior.add(titulo, BorderLayout.WEST);
+        areaSuperior.add(botoes, BorderLayout.EAST);
 
         modeloTabela = new DefaultTableModel(new Object[]{
-                "ID", "Ativo", "Unidade Origem", "Unidade Destino",
-                "Responsável Origem", "Responsável Destino", "Data", "Observações"
+                "ID", "Ativo", "Responsável", "Status", "Data Emissão", "Observações"
         }, 0) {
             @Override
             public boolean isCellEditable(int row, int column) {
@@ -83,6 +84,7 @@ public class PainelMovimentacoes extends JPanel {
         tabela.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         tabela.setRowHeight(30);
         tabela.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 13));
+        tabela.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
         JScrollPane scroll = new JScrollPane(tabela);
 
@@ -93,7 +95,7 @@ public class PainelMovimentacoes extends JPanel {
         rodape.setBorder(BorderFactory.createEmptyBorder(12, 32, 12, 32));
         rodape.setBackground(Cores.FUNDO);
 
-        lblQuantidade = new JLabel("0 movimentações registradas");
+        lblQuantidade = new JLabel("0 termo(s) cadastrado(s)");
         lblQuantidade.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         rodape.add(lblQuantidade, BorderLayout.WEST);
 
@@ -102,28 +104,54 @@ public class PainelMovimentacoes extends JPanel {
     }
 
     private void configurarEventos() {
-        btnNovaMovimentacao.addActionListener(e -> new TelaCadastroMovimentacao(this));
+        btnNovoTermo.addActionListener(e -> new TelaCadastroTermo(janelaProprietaria, this::carregarTabela));
+        btnMarcarAssinado.addActionListener(e -> marcarSelecionadoComoAssinado());
         btnAtualizar.addActionListener(e -> carregarTabela());
     }
 
     public void carregarTabela() {
-        List<Movimentacao> movimentacoes = movimentacaoDAO.listarTodas();
+        List<Termo> termos = termoDAO.listarTodos();
         modeloTabela.setRowCount(0);
 
-        for (Movimentacao mov : movimentacoes) {
+        for (Termo termo : termos) {
             modeloTabela.addRow(new Object[]{
-                    mov.getId(),
-                    descreverAtivo(mov.getAtivoId()),
-                    mov.getUnidadeOrigem(),
-                    mov.getUnidadeDestino(),
-                    descreverColaborador(mov.getResponsavelOrigemId()),
-                    descreverColaborador(mov.getResponsavelDestinoId()),
-                    mov.getDataMovimentacao() != null ? mov.getDataMovimentacao().format(FORMATO_DATA) : "-",
-                    mov.getObservacoes()
+                    termo.getId(),
+                    descreverAtivo(termo.getAtivoId()),
+                    descreverColaborador(termo.getResponsavelId()),
+                    termo.getStatus(),
+                    termo.getDataEmissao() != null ? termo.getDataEmissao().format(FORMATO_DATA) : "-",
+                    termo.getObservacoes()
             });
         }
 
-        lblQuantidade.setText(movimentacoes.size() + " movimentação(ões) registrada(s)");
+        lblQuantidade.setText(termos.size() + " termo(s) cadastrado(s)");
+    }
+
+    private void marcarSelecionadoComoAssinado() {
+        int linha = tabela.getSelectedRow();
+
+        if (linha == -1) {
+            JOptionPane.showMessageDialog(this, "Selecione um termo na tabela.");
+            return;
+        }
+
+        String statusAtual = modeloTabela.getValueAt(linha, 3).toString();
+
+        if ("Assinado".equals(statusAtual)) {
+            JOptionPane.showMessageDialog(this, "Este termo já está assinado.");
+            return;
+        }
+
+        int id = Integer.parseInt(modeloTabela.getValueAt(linha, 0).toString());
+
+        int opcao = JOptionPane.showConfirmDialog(this, "Confirmar assinatura deste termo?",
+                "Confirmação", JOptionPane.YES_NO_OPTION);
+
+        if (opcao == JOptionPane.YES_OPTION) {
+            termoDAO.marcarComoAssinado(id);
+            carregarTabela();
+            JOptionPane.showMessageDialog(this, "Termo marcado como assinado.");
+        }
     }
 
     private String descreverAtivo(int ativoId) {
@@ -136,11 +164,7 @@ public class PainelMovimentacoes extends JPanel {
         return ativo.getTipo() + " - " + ativo.getMarca() + " " + ativo.getModelo();
     }
 
-    private String descreverColaborador(Integer colaboradorId) {
-        if (colaboradorId == null) {
-            return "-";
-        }
-
+    private String descreverColaborador(int colaboradorId) {
         Colaborador colaborador = colaboradorDAO.buscarPorId(colaboradorId);
 
         return colaborador != null ? colaborador.getNome() : "Colaborador #" + colaboradorId;

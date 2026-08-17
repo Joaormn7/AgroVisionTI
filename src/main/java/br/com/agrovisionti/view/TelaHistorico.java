@@ -1,8 +1,10 @@
 package br.com.agrovisionti.view;
 
 import br.com.agrovisionti.dao.AtivoDAO;
+import br.com.agrovisionti.dao.ColaboradorDAO;
 import br.com.agrovisionti.dao.MovimentacaoDAO;
 import br.com.agrovisionti.model.Ativo;
+import br.com.agrovisionti.model.Colaborador;
 import br.com.agrovisionti.model.Movimentacao;
 
 import javax.swing.*;
@@ -22,6 +24,7 @@ public class TelaHistorico extends JFrame {
 
     private final MovimentacaoDAO movimentacaoDAO = new MovimentacaoDAO();
     private final AtivoDAO ativoDAO = new AtivoDAO();
+    private final ColaboradorDAO colaboradorDAO = new ColaboradorDAO();
 
     private final Integer ativoIdFiltro;
 
@@ -60,7 +63,7 @@ public class TelaHistorico extends JFrame {
         raiz.setBackground(new Color(245, 247, 250));
 
         JPanel topo = new JPanel(new BorderLayout());
-        topo.setBackground(new Color(37, 99, 235));
+        topo.setBackground(new Color(5, 150, 105));
         topo.setBorder(BorderFactory.createEmptyBorder(16, 28, 16, 28));
 
         JLabel tituloTopo = new JLabel("AgroVisionTI - Histórico");
@@ -85,7 +88,7 @@ public class TelaHistorico extends JFrame {
 
         lblFiltroAtivo = new JLabel(" ");
         lblFiltroAtivo.setFont(new Font("Segoe UI", Font.ITALIC, 13));
-        lblFiltroAtivo.setForeground(new Color(37, 99, 235));
+        lblFiltroAtivo.setForeground(new Color(5, 150, 105));
 
         JPanel filtros = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 8));
         filtros.setOpaque(false);
@@ -248,8 +251,8 @@ public class TelaHistorico extends JFrame {
                     descreverAtivo(mov.getAtivoId()),
                     mov.getUnidadeOrigem(),
                     mov.getUnidadeDestino(),
-                    mov.getResponsavelOrigem(),
-                    mov.getResponsavelDestino(),
+                    descreverColaborador(mov.getResponsavelOrigemId()),
+                    descreverColaborador(mov.getResponsavelDestinoId()),
                     mov.getDataMovimentacao() != null ? mov.getDataMovimentacao().format(FORMATO_EXIBICAO) : "-",
                     mov.getObservacoes()
             });
@@ -266,5 +269,15 @@ public class TelaHistorico extends JFrame {
         }
 
         return ativo.getTipo() + " - " + ativo.getMarca() + " " + ativo.getModelo();
+    }
+
+    private String descreverColaborador(Integer colaboradorId) {
+        if (colaboradorId == null) {
+            return "-";
+        }
+
+        Colaborador colaborador = colaboradorDAO.buscarPorId(colaboradorId);
+
+        return colaborador != null ? colaborador.getNome() : "Colaborador #" + colaboradorId;
     }
 }

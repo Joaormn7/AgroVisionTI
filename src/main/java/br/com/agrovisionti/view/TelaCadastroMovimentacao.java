@@ -1,8 +1,10 @@
 package br.com.agrovisionti.view;
 
 import br.com.agrovisionti.dao.AtivoDAO;
+import br.com.agrovisionti.dao.ColaboradorDAO;
 import br.com.agrovisionti.dao.MovimentacaoDAO;
 import br.com.agrovisionti.model.Ativo;
+import br.com.agrovisionti.model.Colaborador;
 import br.com.agrovisionti.model.Movimentacao;
 
 import javax.swing.*;
@@ -12,6 +14,7 @@ import java.util.List;
 public class TelaCadastroMovimentacao extends JFrame {
 
     private final AtivoDAO ativoDAO = new AtivoDAO();
+    private final ColaboradorDAO colaboradorDAO = new ColaboradorDAO();
     private final MovimentacaoDAO movimentacaoDAO = new MovimentacaoDAO();
     private final Runnable aoSalvar;
 
@@ -19,7 +22,7 @@ public class TelaCadastroMovimentacao extends JFrame {
     private JLabel labelUnidadeAtual;
     private JLabel labelResponsavelAtual;
     private JTextField campoNovaUnidade;
-    private JTextField campoNovoResponsavel;
+    private JComboBox<Colaborador> comboNovoResponsavel;
     private JTextArea campoObservacoes;
 
     public TelaCadastroMovimentacao() {
@@ -38,19 +41,20 @@ public class TelaCadastroMovimentacao extends JFrame {
         this.aoSalvar = aoSalvar;
 
         setTitle("AgroVisionTI - Cadastro de Movimentação");
-        setSize(800, 650);
+        setSize(800, 660);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setResizable(false);
 
         add(construirPainelPrincipal());
         carregarAtivos();
+        carregarResponsaveis();
         setVisible(true);
     }
 
     private JPanel construirPainelPrincipal() {
         JPanel painel = new JPanel(new BorderLayout());
-        painel.setBackground(new Color(245, 247, 250));
+        painel.setBackground(Cores.FUNDO);
         painel.setBorder(BorderFactory.createEmptyBorder(20, 30, 20, 30));
 
         painel.add(construirTitulo(), BorderLayout.NORTH);
@@ -84,7 +88,7 @@ public class TelaCadastroMovimentacao extends JFrame {
         labelUnidadeAtual = new JLabel("-");
         labelResponsavelAtual = new JLabel("-");
         campoNovaUnidade = new JTextField();
-        campoNovoResponsavel = new JTextField();
+        comboNovoResponsavel = new JComboBox<>();
         campoObservacoes = new JTextArea(4, 20);
         campoObservacoes.setLineWrap(true);
         campoObservacoes.setWrapStyleWord(true);
@@ -93,7 +97,7 @@ public class TelaCadastroMovimentacao extends JFrame {
         adicionarCampo(formulario, c, "Unidade atual", labelUnidadeAtual);
         adicionarCampo(formulario, c, "Responsável atual", labelResponsavelAtual);
         adicionarCampo(formulario, c, "Nova unidade", campoNovaUnidade);
-        adicionarCampo(formulario, c, "Novo responsável", campoNovoResponsavel);
+        adicionarCampo(formulario, c, "Novo responsável", comboNovoResponsavel);
         adicionarCampo(formulario, c, "Observações", new JScrollPane(campoObservacoes));
 
         return formulario;
@@ -135,6 +139,33 @@ public class TelaCadastroMovimentacao extends JFrame {
         comboAtivo.setRenderer(new AtivoComboRenderer());
     }
 
+    private void carregarResponsaveis() {
+        List<Colaborador> colaboradores = colaboradorDAO.listarAtivos();
+
+        if (colaboradores.isEmpty()) {
+            JOptionPane.showMessageDialog(this,
+                    "Nenhum colaborador cadastrado ainda. Cadastre um colaborador antes de registrar a movimentação.",
+                    "Aviso", JOptionPane.WARNING_MESSAGE);
+        }
+
+        for (Colaborador colaborador : colaboradores) {
+            comboNovoResponsavel.addItem(colaborador);
+        }
+
+        comboNovoResponsavel.setRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList<?> list, Object value, int index,
+                                                          boolean isSelected, boolean cellHasFocus) {
+                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                if (value instanceof Colaborador colaborador) {
+                    setText(colaborador.getNome()
+                            + (colaborador.getCargo() != null ? " - " + colaborador.getCargo() : ""));
+                }
+                return this;
+            }
+        });
+    }
+
     private void atualizarLocalizacaoAtual() {
         Ativo selecionado = (Ativo) comboAtivo.getSelectedItem();
 
@@ -145,7 +176,13 @@ public class TelaCadastroMovimentacao extends JFrame {
         }
 
         labelUnidadeAtual.setText(selecionado.getUnidade());
-        labelResponsavelAtual.setText(selecionado.getResponsavel());
+
+        if (selecionado.getResponsavelId() != null) {
+            Colaborador responsavelAtual = colaboradorDAO.buscarPorId(selecionado.getResponsavelId());
+            labelResponsavelAtual.setText(responsavelAtual != null ? responsavelAtual.getNome() : "-");
+        } else {
+            labelResponsavelAtual.setText("-");
+        }
     }
 
     private void salvarMovimentacao() {
@@ -157,10 +194,10 @@ public class TelaCadastroMovimentacao extends JFrame {
         }
 
         String novaUnidade = campoNovaUnidade.getText().trim();
-        String novoResponsavel = campoNovoResponsavel.getText().trim();
+        Colaborador novoResponsavel = (Colaborador) comboNovoResponsavel.getSelectedItem();
 
-        if (novaUnidade.isEmpty() || novoResponsavel.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Preencha a nova unidade e o novo responsável.",
+        if (novaUnidade.isEmpty() || novoResponsavel == null) {
+            JOptionPane.showMessageDialog(this, "Preencha a nova unidade e selecione o novo responsável.",
                     "Aviso", JOptionPane.WARNING_MESSAGE);
             return;
         }
@@ -169,8 +206,8 @@ public class TelaCadastroMovimentacao extends JFrame {
                 ativoSelecionado.getId(),
                 ativoSelecionado.getUnidade(),
                 novaUnidade,
-                ativoSelecionado.getResponsavel(),
-                novoResponsavel,
+                ativoSelecionado.getResponsavelId(),
+                novoResponsavel.getId(),
                 campoObservacoes.getText().trim()
         );
 

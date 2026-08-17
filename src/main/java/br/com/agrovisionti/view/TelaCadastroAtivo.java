@@ -1,13 +1,20 @@
 package br.com.agrovisionti.view;
 
 import br.com.agrovisionti.dao.AtivoDAO;
+import br.com.agrovisionti.dao.ColaboradorDAO;
+import br.com.agrovisionti.dao.UnidadeDAO;
 import br.com.agrovisionti.model.Ativo;
+import br.com.agrovisionti.model.Colaborador;
+import br.com.agrovisionti.model.Unidade;
 
 import javax.swing.*;
 import java.awt.*;
+import java.util.List;
 
 public class TelaCadastroAtivo extends JDialog {
     private final AtivoDAO ativoDAO = new AtivoDAO();
+    private final UnidadeDAO unidadeDAO = new UnidadeDAO();
+    private final ColaboradorDAO colaboradorDAO = new ColaboradorDAO();
     private final Runnable aoSalvar;
     private Ativo ativoEmEdicao;
 
@@ -15,8 +22,8 @@ public class TelaCadastroAtivo extends JDialog {
     private JTextField txtMarca;
     private JTextField txtModelo;
     private JTextField txtNumeroSerie;
-    private JTextField txtUnidade;
-    private JTextField txtResponsavel;
+    private JComboBox<Unidade> cbUnidade;
+    private JComboBox<Colaborador> cbResponsavel;
     private JComboBox<String> cbStatus;
     private JTextArea txtObservacoes;
 
@@ -45,11 +52,13 @@ public class TelaCadastroAtivo extends JDialog {
         this.aoSalvar = aoSalvar;
 
         setTitle(ativo == null ? "Novo Ativo" : "Editar Ativo");
-        setSize(720, 610);
+        setSize(720, 630);
         setLocationRelativeTo(getParent());
         setResizable(false);
 
         criarComponentes();
+        carregarUnidades();
+        carregarResponsaveis();
 
         if (ativo != null) {
             preencherCampos(ativo);
@@ -60,10 +69,10 @@ public class TelaCadastroAtivo extends JDialog {
 
     private void criarComponentes() {
         JPanel raiz = new JPanel(new BorderLayout());
-        raiz.setBackground(new Color(245, 247, 250));
+        raiz.setBackground(Cores.FUNDO);
 
         JPanel topo = new JPanel(new BorderLayout());
-        topo.setBackground(new Color(37, 99, 235));
+        topo.setBackground(Cores.PRIMARIA);
         topo.setBorder(BorderFactory.createEmptyBorder(18, 28, 18, 28));
 
         JLabel titulo = new JLabel(ativoEmEdicao == null ? "Cadastro de Ativo" : "Edição de Ativo");
@@ -72,15 +81,19 @@ public class TelaCadastroAtivo extends JDialog {
         topo.add(titulo, BorderLayout.WEST);
 
         JPanel form = new JPanel(new GridBagLayout());
-        form.setBackground(new Color(245, 247, 250));
+        form.setBackground(Cores.FUNDO);
         form.setBorder(BorderFactory.createEmptyBorder(25, 45, 20, 45));
 
         txtTipo = criarCampo();
         txtMarca = criarCampo();
         txtModelo = criarCampo();
         txtNumeroSerie = criarCampo();
-        txtUnidade = criarCampo();
-        txtResponsavel = criarCampo();
+
+        cbUnidade = new JComboBox<>();
+        cbUnidade.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+
+        cbResponsavel = new JComboBox<>();
+        cbResponsavel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
 
         cbStatus = new JComboBox<>(new String[]{"Disponível", "Em uso", "Manutenção", "Aguardando formatação"});
         cbStatus.setFont(new Font("Segoe UI", Font.PLAIN, 14));
@@ -94,8 +107,8 @@ public class TelaCadastroAtivo extends JDialog {
         adicionarLinha(form, 1, "Marca:", txtMarca);
         adicionarLinha(form, 2, "Modelo:", txtModelo);
         adicionarLinha(form, 3, "Número de Série:", txtNumeroSerie);
-        adicionarLinha(form, 4, "Unidade:", txtUnidade);
-        adicionarLinha(form, 5, "Responsável:", txtResponsavel);
+        adicionarLinha(form, 4, "Unidade:", cbUnidade);
+        adicionarLinha(form, 5, "Responsável:", cbResponsavel);
         adicionarLinha(form, 6, "Status:", cbStatus);
 
         JLabel lblObs = new JLabel("Observações:");
@@ -117,7 +130,7 @@ public class TelaCadastroAtivo extends JDialog {
         form.add(scrollObs, gbc);
 
         JPanel botoes = new JPanel(new FlowLayout(FlowLayout.RIGHT, 12, 16));
-        botoes.setBackground(new Color(245, 247, 250));
+        botoes.setBackground(Cores.FUNDO);
         botoes.setBorder(BorderFactory.createEmptyBorder(0, 0, 12, 32));
 
         JButton btnSalvar = new JButton(ativoEmEdicao == null ? "Salvar" : "Atualizar");
@@ -137,6 +150,43 @@ public class TelaCadastroAtivo extends JDialog {
         raiz.add(botoes, BorderLayout.SOUTH);
 
         add(raiz);
+    }
+
+    private void carregarUnidades() {
+        List<Unidade> unidades = unidadeDAO.listarAtivas();
+
+        if (unidades.isEmpty()) {
+            JOptionPane.showMessageDialog(this,
+                    "Nenhuma unidade cadastrada ainda. Cadastre ao menos uma unidade antes de cadastrar um ativo.",
+                    "Aviso", JOptionPane.WARNING_MESSAGE);
+        }
+
+        for (Unidade unidade : unidades) {
+            cbUnidade.addItem(unidade);
+        }
+    }
+
+    private void carregarResponsaveis() {
+        cbResponsavel.addItem(null); // opção "sem responsável" — ativo Disponível não precisa de um
+
+        for (Colaborador colaborador : colaboradorDAO.listarAtivos()) {
+            cbResponsavel.addItem(colaborador);
+        }
+
+        cbResponsavel.setRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList<?> list, Object value, int index,
+                                                          boolean isSelected, boolean cellHasFocus) {
+                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                if (value == null) {
+                    setText("(sem responsável)");
+                } else if (value instanceof Colaborador colaborador) {
+                    setText(colaborador.getNome()
+                            + (colaborador.getCargo() != null ? " - " + colaborador.getCargo() : ""));
+                }
+                return this;
+            }
+        });
     }
 
     private JTextField criarCampo() {
@@ -170,12 +220,15 @@ public class TelaCadastroAtivo extends JDialog {
 
         Ativo ativo = ativoEmEdicao == null ? new Ativo() : ativoEmEdicao;
 
+        Unidade unidadeSelecionada = (Unidade) cbUnidade.getSelectedItem();
+        Colaborador responsavelSelecionado = (Colaborador) cbResponsavel.getSelectedItem();
+
         ativo.setTipo(txtTipo.getText().trim());
         ativo.setMarca(txtMarca.getText().trim());
         ativo.setModelo(txtModelo.getText().trim());
         ativo.setNumeroSerie(txtNumeroSerie.getText().trim());
-        ativo.setUnidade(txtUnidade.getText().trim());
-        ativo.setResponsavel(txtResponsavel.getText().trim());
+        ativo.setUnidade(unidadeSelecionada.getNome());
+        ativo.setResponsavelId(responsavelSelecionado != null ? responsavelSelecionado.getId() : null);
         ativo.setStatus(cbStatus.getSelectedItem().toString());
         ativo.setObservacoes(txtObservacoes.getText().trim());
 
@@ -194,10 +247,22 @@ public class TelaCadastroAtivo extends JDialog {
     private boolean validarCampos() {
         if (txtTipo.getText().trim().isEmpty()
                 || txtMarca.getText().trim().isEmpty()
-                || txtModelo.getText().trim().isEmpty()
-                || txtUnidade.getText().trim().isEmpty()) {
+                || txtModelo.getText().trim().isEmpty()) {
 
-            JOptionPane.showMessageDialog(this, "Preencha os campos obrigatórios: Tipo, Marca, Modelo e Unidade.");
+            JOptionPane.showMessageDialog(this, "Preencha os campos obrigatórios: Tipo, Marca e Modelo.");
+            return false;
+        }
+
+        if (cbUnidade.getSelectedItem() == null) {
+            JOptionPane.showMessageDialog(this, "Selecione uma unidade. Se a lista estiver vazia, cadastre uma unidade primeiro.");
+            return false;
+        }
+
+        // Regra de negócio: só é obrigatório ter responsável se o ativo não estiver "Disponível"
+        String statusSelecionado = (String) cbStatus.getSelectedItem();
+        if (!"Disponível".equals(statusSelecionado) && cbResponsavel.getSelectedItem() == null) {
+            JOptionPane.showMessageDialog(this,
+                    "Selecione um responsável — obrigatório quando o status não é 'Disponível'.");
             return false;
         }
 
@@ -209,9 +274,25 @@ public class TelaCadastroAtivo extends JDialog {
         txtMarca.setText(ativo.getMarca());
         txtModelo.setText(ativo.getModelo());
         txtNumeroSerie.setText(ativo.getNumeroSerie());
-        txtUnidade.setText(ativo.getUnidade());
-        txtResponsavel.setText(ativo.getResponsavel());
         cbStatus.setSelectedItem(ativo.getStatus());
         txtObservacoes.setText(ativo.getObservacoes());
+
+        for (int i = 0; i < cbUnidade.getItemCount(); i++) {
+            Unidade unidade = cbUnidade.getItemAt(i);
+            if (unidade.getNome().equals(ativo.getUnidade())) {
+                cbUnidade.setSelectedIndex(i);
+                break;
+            }
+        }
+
+        if (ativo.getResponsavelId() != null) {
+            for (int i = 0; i < cbResponsavel.getItemCount(); i++) {
+                Colaborador colaborador = cbResponsavel.getItemAt(i);
+                if (colaborador != null && colaborador.getId() == ativo.getResponsavelId()) {
+                    cbResponsavel.setSelectedIndex(i);
+                    break;
+                }
+            }
+        }
     }
 }

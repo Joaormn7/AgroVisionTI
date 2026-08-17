@@ -1,8 +1,10 @@
 package br.com.agrovisionti.view;
 
 import br.com.agrovisionti.dao.AtivoDAO;
+import br.com.agrovisionti.dao.ColaboradorDAO;
 import br.com.agrovisionti.dao.MovimentacaoDAO;
 import br.com.agrovisionti.model.Ativo;
+import br.com.agrovisionti.model.Colaborador;
 import br.com.agrovisionti.model.Movimentacao;
 
 import javax.swing.*;
@@ -22,6 +24,7 @@ public class PainelHistorico extends JPanel {
 
     private final MovimentacaoDAO movimentacaoDAO = new MovimentacaoDAO();
     private final AtivoDAO ativoDAO = new AtivoDAO();
+    private final ColaboradorDAO colaboradorDAO = new ColaboradorDAO();
 
     private JTextField txtPesquisa;
     private JTextField txtDataInicio;
@@ -191,8 +194,8 @@ public class PainelHistorico extends JPanel {
                     descreverAtivo(mov.getAtivoId()),
                     mov.getUnidadeOrigem(),
                     mov.getUnidadeDestino(),
-                    mov.getResponsavelOrigem(),
-                    mov.getResponsavelDestino(),
+                    descreverColaborador(mov.getResponsavelOrigemId()),
+                    descreverColaborador(mov.getResponsavelDestinoId()),
                     mov.getDataMovimentacao() != null ? mov.getDataMovimentacao().format(FORMATO_EXIBICAO) : "-",
                     mov.getObservacoes()
             });
@@ -209,5 +212,15 @@ public class PainelHistorico extends JPanel {
         }
 
         return ativo.getTipo() + " - " + ativo.getMarca() + " " + ativo.getModelo();
+    }
+
+    private String descreverColaborador(Integer colaboradorId) {
+        if (colaboradorId == null) {
+            return "-";
+        }
+
+        Colaborador colaborador = colaboradorDAO.buscarPorId(colaboradorId);
+
+        return colaborador != null ? colaborador.getNome() : "Colaborador #" + colaboradorId;
     }
 }

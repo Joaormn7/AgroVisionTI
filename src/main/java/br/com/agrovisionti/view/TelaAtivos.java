@@ -1,7 +1,9 @@
 package br.com.agrovisionti.view;
 
 import br.com.agrovisionti.dao.AtivoDAO;
+import br.com.agrovisionti.dao.ColaboradorDAO;
 import br.com.agrovisionti.model.Ativo;
+import br.com.agrovisionti.model.Colaborador;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -12,6 +14,7 @@ import java.util.List;
 
 public class TelaAtivos extends JFrame {
     private final AtivoDAO ativoDAO = new AtivoDAO();
+    private final ColaboradorDAO colaboradorDAO = new ColaboradorDAO();
 
     private JTextField txtPesquisa;
     private JButton btnNovo;
@@ -42,7 +45,7 @@ public class TelaAtivos extends JFrame {
         raiz.setBackground(new Color(245, 247, 250));
 
         JPanel topo = new JPanel(new BorderLayout());
-        topo.setBackground(new Color(37, 99, 235));
+        topo.setBackground(new Color(5, 150, 105));
         topo.setBorder(BorderFactory.createEmptyBorder(16, 28, 16, 28));
 
         JLabel tituloTopo = new JLabel("AgroVisionTI - Ativos");
@@ -178,12 +181,22 @@ public class TelaAtivos extends JFrame {
                     ativo.getModelo(),
                     ativo.getNumeroSerie(),
                     ativo.getUnidade(),
-                    ativo.getResponsavel(),
+                    descreverColaborador(ativo.getResponsavelId()),
                     ativo.getStatus()
             });
         }
 
         lblQuantidade.setText(ativos.size() + " ativo(s) encontrado(s)");
+    }
+
+    private String descreverColaborador(Integer colaboradorId) {
+        if (colaboradorId == null) {
+            return "-";
+        }
+
+        Colaborador colaborador = colaboradorDAO.buscarPorId(colaboradorId);
+
+        return colaborador != null ? colaborador.getNome() : "Colaborador #" + colaboradorId;
     }
 
     private int obterIdSelecionado() {

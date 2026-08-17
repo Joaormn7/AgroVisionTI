@@ -10,7 +10,7 @@ public class Ativo {
     private String modelo;
     private String numeroSerie;
     private String unidade;
-    private String responsavel;
+    private Integer responsavelId;
     private String status;
     private String observacoes;
     private Timestamp dataCadastro;
@@ -20,7 +20,7 @@ public class Ativo {
 
     public Ativo(int id, String tipo, String marca, String modelo,
                  String numeroSerie, String unidade,
-                 String responsavel, String status,
+                 Integer responsavelId, String status,
                  String observacoes, Timestamp dataCadastro) {
 
         this.id = id;
@@ -29,7 +29,7 @@ public class Ativo {
         this.modelo = modelo;
         this.numeroSerie = numeroSerie;
         this.unidade = unidade;
-        this.responsavel = responsavel;
+        this.responsavelId = responsavelId;
         this.status = status;
         this.observacoes = observacoes;
         this.dataCadastro = dataCadastro;
@@ -83,12 +83,12 @@ public class Ativo {
         this.unidade = unidade;
     }
 
-    public String getResponsavel() {
-        return responsavel;
+    public Integer getResponsavelId() {
+        return responsavelId;
     }
 
-    public void setResponsavel(String responsavel) {
-        this.responsavel = responsavel;
+    public void setResponsavelId(Integer responsavelId) {
+        this.responsavelId = responsavelId;
     }
 
     public String getStatus() {

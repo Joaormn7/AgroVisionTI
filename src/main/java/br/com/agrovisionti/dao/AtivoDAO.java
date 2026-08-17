@@ -14,7 +14,7 @@ public class AtivoDAO {
         String sql = """
                 INSERT INTO ativos
                 (tipo, marca, modelo, numero_serie, unidade,
-                 responsavel, status, observacoes)
+                 responsavel_id, status, observacoes)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                 """;
 
@@ -28,7 +28,13 @@ public class AtivoDAO {
             stmt.setString(3, ativo.getModelo());
             stmt.setString(4, ativo.getNumeroSerie());
             stmt.setString(5, ativo.getUnidade());
-            stmt.setString(6, ativo.getResponsavel());
+
+            if (ativo.getResponsavelId() != null) {
+                stmt.setInt(6, ativo.getResponsavelId());
+            } else {
+                stmt.setNull(6, Types.INTEGER);
+            }
+
             stmt.setString(7, ativo.getStatus());
             stmt.setString(8, ativo.getObservacoes());
 
@@ -43,7 +49,7 @@ public class AtivoDAO {
 
         List<Ativo> ativos = new ArrayList<>();
 
-        String sql = "SELECT * FROM ativos ORDER BY id DESC";
+        String sql = "SELECT * FROM ativos WHERE excluido = false ORDER BY id DESC";
 
         try (
                 Connection conexao = Conexao.obterConexao();
@@ -93,12 +99,12 @@ public class AtivoDAO {
         String sql = """
                 SELECT *
                 FROM ativos
-                WHERE tipo LIKE ?
+                WHERE excluido = false
+                  AND (tipo LIKE ?
                    OR marca LIKE ?
                    OR modelo LIKE ?
                    OR unidade LIKE ?
-                   OR responsavel LIKE ?
-                   OR status LIKE ?
+                   OR status LIKE ?)
                 ORDER BY id DESC
                 """;
 
@@ -109,7 +115,7 @@ public class AtivoDAO {
 
             String filtro = "%" + pesquisa + "%";
 
-            for (int i = 1; i <= 6; i++) {
+            for (int i = 1; i <= 5; i++) {
                 stmt.setString(i, filtro);
             }
 
@@ -135,7 +141,7 @@ public class AtivoDAO {
                     modelo = ?,
                     numero_serie = ?,
                     unidade = ?,
-                    responsavel = ?,
+                    responsavel_id = ?,
                     status = ?,
                     observacoes = ?
                 WHERE id = ?
@@ -151,7 +157,13 @@ public class AtivoDAO {
             stmt.setString(3, ativo.getModelo());
             stmt.setString(4, ativo.getNumeroSerie());
             stmt.setString(5, ativo.getUnidade());
-            stmt.setString(6, ativo.getResponsavel());
+
+            if (ativo.getResponsavelId() != null) {
+                stmt.setInt(6, ativo.getResponsavelId());
+            } else {
+                stmt.setNull(6, Types.INTEGER);
+            }
+
             stmt.setString(7, ativo.getStatus());
             stmt.setString(8, ativo.getObservacoes());
             stmt.setInt(9, ativo.getId());
@@ -163,9 +175,12 @@ public class AtivoDAO {
         }
     }
 
+    // Soft delete: marca o ativo como excluído em vez de apagar a linha do banco.
+    // Preserva a integridade do histórico de movimentações (FK ativo_id) e evita
+    // erro de violação de chave estrangeira ao excluir um ativo já movimentado.
     public void excluir(int id) {
 
-        String sql = "DELETE FROM ativos WHERE id = ?";
+        String sql = "UPDATE ativos SET excluido = true WHERE id = ?";
 
         try (
                 Connection conexao = Conexao.obterConexao();
@@ -191,7 +206,10 @@ public class AtivoDAO {
         ativo.setModelo(rs.getString("modelo"));
         ativo.setNumeroSerie(rs.getString("numero_serie"));
         ativo.setUnidade(rs.getString("unidade"));
-        ativo.setResponsavel(rs.getString("responsavel"));
+
+        int responsavelId = rs.getInt("responsavel_id");
+        ativo.setResponsavelId(rs.wasNull() ? null : responsavelId);
+
         ativo.setStatus(rs.getString("status"));
         ativo.setObservacoes(rs.getString("observacoes"));
 

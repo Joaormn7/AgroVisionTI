@@ -6,15 +6,11 @@ public class Usuario {
     private String nome;
     private String email;
     private String senha;
+    private String salt;
+    private String perfil;
+    private boolean ativo;
 
     public Usuario() {
-    }
-
-    public Usuario(int id, String nome, String email, String senha) {
-        this.id = id;
-        this.nome = nome;
-        this.email = email;
-        this.senha = senha;
     }
 
     public int getId() {
@@ -47,5 +43,33 @@ public class Usuario {
 
     public void setSenha(String senha) {
         this.senha = senha;
+    }
+
+    public String getSalt() {
+        return salt;
+    }
+
+    public void setSalt(String salt) {
+        this.salt = salt;
+    }
+
+    public String getPerfil() {
+        return perfil;
+    }
+
+    public void setPerfil(String perfil) {
+        this.perfil = perfil;
+    }
+
+    public boolean isAtivo() {
+        return ativo;
+    }
+
+    public void setAtivo(boolean ativo) {
+        this.ativo = ativo;
+    }
+
+    public boolean isAdministrador() {
+        return "Administrador".equals(perfil);
     }
 }
