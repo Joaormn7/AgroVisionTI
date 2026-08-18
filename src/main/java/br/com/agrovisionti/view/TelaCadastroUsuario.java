@@ -115,6 +115,9 @@ public class TelaCadastroUsuario extends JDialog {
         JButton btnSalvar = new JButton(usuarioEmEdicao == null ? "Salvar" : "Atualizar");
         JButton btnCancelar = new JButton("Cancelar");
 
+        Cores.estilizarBotaoPrimario(btnSalvar);
+        Cores.estilizarBotaoSecundario(btnCancelar);
+
         botoes.add(btnSalvar);
         botoes.add(btnCancelar);
 
@@ -140,7 +143,7 @@ public class TelaCadastroUsuario extends JDialog {
         String perfil = (String) cbPerfil.getSelectedItem();
 
         if (nome.isEmpty() || email.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Preencha nome e e-mail.", "Aviso", JOptionPane.WARNING_MESSAGE);
+            Toast.mostrar(this, "Preencha nome e e-mail.", Toast.Tipo.AVISO);
             return;
         }
 
@@ -149,7 +152,7 @@ public class TelaCadastroUsuario extends JDialog {
                 String senha = new String(txtSenha.getPassword());
 
                 if (senha.isEmpty()) {
-                    JOptionPane.showMessageDialog(this, "Informe uma senha.", "Aviso", JOptionPane.WARNING_MESSAGE);
+                    Toast.mostrar(this, "Informe uma senha.", Toast.Tipo.AVISO);
                     return;
                 }
 
@@ -159,7 +162,7 @@ public class TelaCadastroUsuario extends JDialog {
                 novo.setPerfil(perfil);
 
                 usuarioDAO.cadastrar(novo, senha);
-                JOptionPane.showMessageDialog(this, "Usuário cadastrado com sucesso.");
+                Toast.mostrar(janelaPaiOuThis(), "Usuário cadastrado com sucesso.", Toast.Tipo.SUCESSO);
 
             } else {
                 usuarioEmEdicao.setNome(nome);
@@ -171,24 +174,27 @@ public class TelaCadastroUsuario extends JDialog {
                     String novaSenha = new String(txtSenha.getPassword());
 
                     if (novaSenha.isEmpty()) {
-                        JOptionPane.showMessageDialog(this, "Informe a nova senha ou desmarque 'Alterar senha'.",
-                                "Aviso", JOptionPane.WARNING_MESSAGE);
+                        Toast.mostrar(this, "Informe a nova senha ou desmarque 'Alterar senha'.", Toast.Tipo.AVISO);
                         return;
                     }
 
                     usuarioDAO.definirSenha(email, novaSenha);
                 }
 
-                JOptionPane.showMessageDialog(this, "Usuário atualizado com sucesso.");
+                Toast.mostrar(janelaPaiOuThis(), "Usuário atualizado com sucesso.", Toast.Tipo.SUCESSO);
             }
 
             aoSalvar.run();
             dispose();
 
         } catch (RuntimeException e) {
-            JOptionPane.showMessageDialog(this, "Erro ao salvar usuário. Verifique se o e-mail já está em uso.",
-                    "Erro", JOptionPane.ERROR_MESSAGE);
+            Toast.mostrar(this, "Erro ao salvar usuário. Verifique se o e-mail já está em uso.", Toast.Tipo.ERRO);
         }
+    }
+
+    private Window janelaPaiOuThis() {
+        Window dono = getOwner();
+        return dono != null ? dono : this;
     }
 
     private void preencherCampos(Usuario usuario) {

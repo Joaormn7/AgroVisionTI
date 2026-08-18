@@ -55,6 +55,9 @@ public class PainelMovimentacoes extends JPanel {
         btnNovaMovimentacao = new JButton("Nova Movimentação");
         btnAtualizar = new JButton("Atualizar");
 
+        Cores.estilizarBotaoPrimario(btnNovaMovimentacao);
+        Cores.estilizarBotaoSecundario(btnAtualizar);
+
         botoes.add(btnNovaMovimentacao);
         botoes.add(btnAtualizar);
 
@@ -81,10 +84,13 @@ public class PainelMovimentacoes extends JPanel {
 
         tabela = new JTable(modeloTabela);
         tabela.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        tabela.setRowHeight(30);
+        tabela.setRowHeight(34);
         tabela.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 13));
 
+        TabelaUtil.aplicarEstiloPadrao(tabela);
+
         JScrollPane scroll = new JScrollPane(tabela);
+        scroll.setBorder(BorderFactory.createLineBorder(Cores.BORDA));
 
         conteudo.add(areaSuperior, BorderLayout.NORTH);
         conteudo.add(scroll, BorderLayout.CENTER);

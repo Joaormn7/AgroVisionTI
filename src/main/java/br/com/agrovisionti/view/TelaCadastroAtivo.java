@@ -136,6 +136,9 @@ public class TelaCadastroAtivo extends JDialog {
         JButton btnSalvar = new JButton(ativoEmEdicao == null ? "Salvar" : "Atualizar");
         JButton btnCancelar = new JButton("Cancelar");
 
+        Cores.estilizarBotaoPrimario(btnSalvar);
+        Cores.estilizarBotaoSecundario(btnCancelar);
+
         btnSalvar.setPreferredSize(new Dimension(120, 38));
         btnCancelar.setPreferredSize(new Dimension(120, 38));
 
@@ -156,9 +159,7 @@ public class TelaCadastroAtivo extends JDialog {
         List<Unidade> unidades = unidadeDAO.listarAtivas();
 
         if (unidades.isEmpty()) {
-            JOptionPane.showMessageDialog(this,
-                    "Nenhuma unidade cadastrada ainda. Cadastre ao menos uma unidade antes de cadastrar um ativo.",
-                    "Aviso", JOptionPane.WARNING_MESSAGE);
+            Toast.mostrar(this, "Nenhuma unidade cadastrada — cadastre uma unidade primeiro.", Toast.Tipo.AVISO);
         }
 
         for (Unidade unidade : unidades) {
@@ -234,14 +235,22 @@ public class TelaCadastroAtivo extends JDialog {
 
         if (ativoEmEdicao == null) {
             ativoDAO.salvar(ativo);
-            JOptionPane.showMessageDialog(this, "Ativo cadastrado com sucesso.");
+            Toast.mostrar(janelaPaiOuThis(), "Ativo cadastrado com sucesso.", Toast.Tipo.SUCESSO);
         } else {
             ativoDAO.atualizar(ativo);
-            JOptionPane.showMessageDialog(this, "Ativo atualizado com sucesso.");
+            Toast.mostrar(janelaPaiOuThis(), "Ativo atualizado com sucesso.", Toast.Tipo.SUCESSO);
         }
 
         aoSalvar.run();
         dispose();
+    }
+
+    // O diálogo fecha antes do toast terminar de aparecer, então mostramos
+    // na janela dona (a tela por trás) em vez de "this" — assim o toast
+    // continua visível mesmo depois do formulário sumir.
+    private Window janelaPaiOuThis() {
+        Window dono = getOwner();
+        return dono != null ? dono : this;
     }
 
     private boolean validarCampos() {
@@ -249,20 +258,19 @@ public class TelaCadastroAtivo extends JDialog {
                 || txtMarca.getText().trim().isEmpty()
                 || txtModelo.getText().trim().isEmpty()) {
 
-            JOptionPane.showMessageDialog(this, "Preencha os campos obrigatórios: Tipo, Marca e Modelo.");
+            Toast.mostrar(this, "Preencha os campos obrigatórios: Tipo, Marca e Modelo.", Toast.Tipo.AVISO);
             return false;
         }
 
         if (cbUnidade.getSelectedItem() == null) {
-            JOptionPane.showMessageDialog(this, "Selecione uma unidade. Se a lista estiver vazia, cadastre uma unidade primeiro.");
+            Toast.mostrar(this, "Selecione uma unidade. Se a lista estiver vazia, cadastre uma unidade primeiro.", Toast.Tipo.AVISO);
             return false;
         }
 
         // Regra de negócio: só é obrigatório ter responsável se o ativo não estiver "Disponível"
         String statusSelecionado = (String) cbStatus.getSelectedItem();
         if (!"Disponível".equals(statusSelecionado) && cbResponsavel.getSelectedItem() == null) {
-            JOptionPane.showMessageDialog(this,
-                    "Selecione um responsável — obrigatório quando o status não é 'Disponível'.");
+            Toast.mostrar(this, "Selecione um responsável — obrigatório quando o status não é 'Disponível'.", Toast.Tipo.AVISO);
             return false;
         }
 

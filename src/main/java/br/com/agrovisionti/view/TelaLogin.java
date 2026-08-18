@@ -74,12 +74,8 @@ public class TelaLogin extends JFrame {
         btnEntrar = new JButton("Entrar");
         btnSair = new JButton("Sair");
 
-        btnEntrar.setBackground(Cores.PRIMARIA);
-        btnEntrar.setForeground(Color.WHITE);
-        btnEntrar.setFont(new Font("Segoe UI", Font.BOLD, 14));
-        btnEntrar.setFocusPainted(false);
-        btnEntrar.setOpaque(true);
-        btnEntrar.setBorderPainted(false);
+        Cores.estilizarBotaoPrimario(btnEntrar);
+        Cores.estilizarBotaoSecundario(btnSair);
 
         botoes.add(btnEntrar);
         botoes.add(btnSair);
@@ -101,7 +97,7 @@ public class TelaLogin extends JFrame {
         String senha = String.valueOf(txtSenha.getPassword());
 
         if (email.isBlank() || senha.isBlank()) {
-            JOptionPane.showMessageDialog(this, "Informe e-mail e senha.");
+            Toast.mostrar(this, "Informe e-mail e senha.", Toast.Tipo.AVISO);
             return;
         }
 
@@ -117,11 +113,11 @@ public class TelaLogin extends JFrame {
 
             } else {
 
-                JOptionPane.showMessageDialog(this, "E-mail ou senha inválidos.");
+                Toast.mostrar(this, "E-mail ou senha inválidos.", Toast.Tipo.ERRO);
 
             }
         } catch (RuntimeException ex) {
-            JOptionPane.showMessageDialog(this, ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
+            Toast.mostrar(this, ex.getMessage(), Toast.Tipo.ERRO);
         }
     }
 }

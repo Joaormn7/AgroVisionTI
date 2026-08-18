@@ -23,7 +23,6 @@ public class TelaPrincipal extends JFrame {
     private PainelRelatorios painelRelatorios;
     private PainelUnidades painelUnidades;
     private PainelUsuarios painelUsuarios;
-    private PainelTermos painelTermos;
     private PainelColaboradores painelColaboradores;
 
     public TelaPrincipal(Usuario usuarioLogado) {
@@ -49,7 +48,6 @@ public class TelaPrincipal extends JFrame {
         painelRelatorios = new PainelRelatorios();
         painelUnidades = new PainelUnidades(this, usuarioLogado.isAdministrador());
         painelUsuarios = new PainelUsuarios(this);
-        painelTermos = new PainelTermos(this, usuarioLogado.isAdministrador());
         painelColaboradores = new PainelColaboradores(this, usuarioLogado.isAdministrador());
 
         painelCards.add(painelAtivos, "ATIVOS");
@@ -57,7 +55,6 @@ public class TelaPrincipal extends JFrame {
         painelCards.add(painelRelatorios, "RELATORIOS");
         painelCards.add(painelUnidades, "UNIDADES");
         painelCards.add(painelUsuarios, "USUARIOS");
-        painelCards.add(painelTermos, "TERMOS");
         painelCards.add(painelColaboradores, "COLABORADORES");
 
         raiz.add(painelCards, BorderLayout.CENTER);
@@ -101,21 +98,18 @@ public class TelaPrincipal extends JFrame {
         JButton itemAtivos = criarItemMenu("Ativos", "icons/ativos.svg");
         JButton itemMovimentacoes = criarItemMenu("Movimentações", "icons/movimentacoes.svg");
         JButton itemUnidades = criarItemMenu("Unidades", "icons/unidades.svg");
-        JButton itemTermos = criarItemMenu("Termos", "icons/termos.svg");
         JButton itemColaboradores = criarItemMenu("Colaboradores", "icons/colaboradores.svg");
 
         itensMenu.add(itemRelatorios);
         itensMenu.add(itemAtivos);
         itensMenu.add(itemMovimentacoes);
         itensMenu.add(itemUnidades);
-        itensMenu.add(itemTermos);
         itensMenu.add(itemColaboradores);
 
         itemRelatorios.addActionListener(e -> mostrar("RELATORIOS", itemRelatorios));
         itemAtivos.addActionListener(e -> mostrar("ATIVOS", itemAtivos));
         itemMovimentacoes.addActionListener(e -> mostrar("MOVIMENTACOES", itemMovimentacoes));
         itemUnidades.addActionListener(e -> mostrar("UNIDADES", itemUnidades));
-        itemTermos.addActionListener(e -> mostrar("TERMOS", itemTermos));
         itemColaboradores.addActionListener(e -> mostrar("COLABORADORES", itemColaboradores));
 
         sidebar.add(logo);
@@ -126,7 +120,6 @@ public class TelaPrincipal extends JFrame {
         sidebar.add(itemAtivos);
         sidebar.add(itemMovimentacoes);
         sidebar.add(itemUnidades);
-        sidebar.add(itemTermos);
         sidebar.add(itemColaboradores);
 
         if (usuarioLogado.isAdministrador()) {
@@ -214,7 +207,6 @@ public class TelaPrincipal extends JFrame {
             case "RELATORIOS" -> painelRelatorios.atualizar();
             case "UNIDADES" -> painelUnidades.carregarTabela();
             case "USUARIOS" -> painelUsuarios.carregarTabela();
-            case "TERMOS" -> painelTermos.carregarTabela();
             case "COLABORADORES" -> painelColaboradores.carregarTabela();
         }
     }

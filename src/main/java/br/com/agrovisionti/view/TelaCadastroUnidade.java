@@ -95,6 +95,9 @@ public class TelaCadastroUnidade extends JDialog {
         JButton btnSalvar = new JButton(unidadeEmEdicao == null ? "Salvar" : "Atualizar");
         JButton btnCancelar = new JButton("Cancelar");
 
+        Cores.estilizarBotaoPrimario(btnSalvar);
+        Cores.estilizarBotaoSecundario(btnCancelar);
+
         botoes.add(btnSalvar);
         botoes.add(btnCancelar);
 
@@ -112,14 +115,14 @@ public class TelaCadastroUnidade extends JDialog {
         String nome = txtNome.getText().trim();
 
         if (nome.isEmpty()) {
-            JOptionPane.showMessageDialog(this, "Informe o nome da unidade.", "Aviso", JOptionPane.WARNING_MESSAGE);
+            Toast.mostrar(this, "Informe o nome da unidade.", Toast.Tipo.AVISO);
             return;
         }
 
         String cnpjDigitos = txtCnpj.getText().replaceAll("\\D", "");
 
         if (cnpjDigitos.length() != 14) {
-            JOptionPane.showMessageDialog(this, "CNPJ inválido — informe os 14 dígitos.", "Aviso", JOptionPane.WARNING_MESSAGE);
+            Toast.mostrar(this, "CNPJ inválido — informe os 14 dígitos.", Toast.Tipo.AVISO);
             return;
         }
 
@@ -130,23 +133,28 @@ public class TelaCadastroUnidade extends JDialog {
             if (unidadeEmEdicao == null) {
                 Unidade nova = new Unidade(nome, tipo, cnpj);
                 unidadeDAO.salvar(nova);
-                JOptionPane.showMessageDialog(this, "Unidade cadastrada com sucesso.");
+                Toast.mostrar(janelaPaiOuThis(), "Unidade cadastrada com sucesso.", Toast.Tipo.SUCESSO);
             } else {
                 unidadeEmEdicao.setNome(nome);
                 unidadeEmEdicao.setTipo(tipo);
                 unidadeEmEdicao.setCnpj(cnpj);
                 unidadeDAO.atualizar(unidadeEmEdicao);
-                JOptionPane.showMessageDialog(this, "Unidade atualizada com sucesso.");
+                Toast.mostrar(janelaPaiOuThis(), "Unidade atualizada com sucesso.", Toast.Tipo.SUCESSO);
             }
 
             aoSalvar.run();
             dispose();
 
         } catch (RuntimeException e) {
-            JOptionPane.showMessageDialog(this,
-                    "Erro ao salvar unidade. Verifique se o nome ou o CNPJ já estão em uso.",
-                    "Erro", JOptionPane.ERROR_MESSAGE);
+            Toast.mostrar(this, "Erro ao salvar unidade. Verifique se o nome ou o CNPJ já estão em uso.", Toast.Tipo.ERRO);
         }
+    }
+
+    // Mesma lógica do TelaCadastroAtivo: o diálogo fecha antes do toast sumir
+    // sozinho, então mostramos na janela dona pra continuar visível.
+    private Window janelaPaiOuThis() {
+        Window dono = getOwner();
+        return dono != null ? dono : this;
     }
 
     private void preencherCampos(Unidade unidade) {

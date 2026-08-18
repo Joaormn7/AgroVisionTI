@@ -2,8 +2,10 @@ package br.com.agrovisionti.view;
 
 import br.com.agrovisionti.dao.AtivoDAO;
 import br.com.agrovisionti.dao.ColaboradorDAO;
+import br.com.agrovisionti.dao.UnidadeDAO;
 import br.com.agrovisionti.model.Ativo;
 import br.com.agrovisionti.model.Colaborador;
+import br.com.agrovisionti.model.Unidade;
 
 import javax.swing.*;
 import javax.swing.event.DocumentEvent;
@@ -11,36 +13,66 @@ import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.util.List;
+import java.util.Map;
 
 public class PainelAtivos extends JPanel {
 
     private final AtivoDAO ativoDAO = new AtivoDAO();
+    private final UnidadeDAO unidadeDAO = new UnidadeDAO();
     private final ColaboradorDAO colaboradorDAO = new ColaboradorDAO();
-    private final Window janelaProprietaria;
     private final boolean podeEditar;
 
+    private static final Map<String, Color> CORES_STATUS = Map.of(
+            "Disponível", Cores.STATUS_DISPONIVEL,
+            "Em uso", Cores.STATUS_EM_USO,
+            "Manutenção", Cores.STATUS_MANUTENCAO,
+            "Aguardando formatação", Cores.STATUS_AGUARDANDO
+    );
+
+    // Alterna entre a lista e o formulário DENTRO do próprio painel —
+    // nada de JDialog/popup por cima.
+    private final CardLayout cardLayout = new CardLayout();
+    private final JPanel painelCards = new JPanel(cardLayout);
+    private static final String CARD_LISTA = "LISTA";
+    private static final String CARD_FORMULARIO = "FORMULARIO";
+
+    // ---- componentes da lista ----
     private JTextField txtPesquisa;
     private JButton btnNovo;
     private JButton btnEditar;
     private JButton btnExcluir;
-    private JButton btnHistorico;
     private JButton btnAtualizar;
-
     private JTable tabela;
     private DefaultTableModel modeloTabela;
     private JLabel lblQuantidade;
 
+    // ---- componentes do formulário ----
+    private JLabel lblTituloFormulario;
+    private JTextField txtTipo;
+    private JTextField txtMarca;
+    private JTextField txtModelo;
+    private JTextField txtNumeroSerie;
+    private JComboBox<Unidade> cbUnidade;
+    private JComboBox<Colaborador> cbResponsavel;
+    private JComboBox<String> cbStatus;
+    private JTextArea txtObservacoes;
+    private Ativo ativoEmEdicao;
+
     public PainelAtivos(Window janelaProprietaria, boolean podeEditar) {
-        this.janelaProprietaria = janelaProprietaria;
         this.podeEditar = podeEditar;
         setLayout(new BorderLayout());
         setBackground(Cores.FUNDO);
-        criarComponentes();
-        configurarEventos();
+
+        painelCards.add(construirPainelLista(), CARD_LISTA);
+        painelCards.add(construirPainelFormulario(), CARD_FORMULARIO);
+        add(painelCards, BorderLayout.CENTER);
+
         carregarTabela();
     }
 
-    private void criarComponentes() {
+    // ================= LISTA =================
+
+    private JPanel construirPainelLista() {
         JPanel conteudo = new JPanel(new BorderLayout(0, 18));
         conteudo.setBackground(Cores.FUNDO);
         conteudo.setBorder(BorderFactory.createEmptyBorder(26, 32, 20, 32));
@@ -70,13 +102,16 @@ public class PainelAtivos extends JPanel {
         btnNovo = new JButton("Novo Ativo");
         btnEditar = new JButton("Editar");
         btnExcluir = new JButton("Excluir");
-        btnHistorico = new JButton("Ver Histórico");
         btnAtualizar = new JButton("Atualizar");
+
+        Cores.estilizarBotaoPrimario(btnNovo);
+        Cores.estilizarBotaoSecundario(btnEditar);
+        Cores.estilizarBotaoPerigo(btnExcluir);
+        Cores.estilizarBotaoSecundario(btnAtualizar);
 
         botoes.add(btnNovo);
         botoes.add(btnEditar);
         botoes.add(btnExcluir);
-        botoes.add(btnHistorico);
         botoes.add(btnAtualizar);
 
         if (!podeEditar) {
@@ -102,11 +137,15 @@ public class PainelAtivos extends JPanel {
 
         tabela = new JTable(modeloTabela);
         tabela.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        tabela.setRowHeight(30);
+        tabela.setRowHeight(34);
         tabela.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 13));
         tabela.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
+        TabelaUtil.aplicarEstiloPadrao(tabela);
+        tabela.getColumnModel().getColumn(7).setCellRenderer(new BadgeCellRenderer(CORES_STATUS));
+
         JScrollPane scroll = new JScrollPane(tabela);
+        scroll.setBorder(BorderFactory.createLineBorder(Cores.BORDA));
 
         conteudo.add(areaSuperior, BorderLayout.NORTH);
         conteudo.add(scroll, BorderLayout.CENTER);
@@ -119,15 +158,17 @@ public class PainelAtivos extends JPanel {
         lblQuantidade.setFont(new Font("Segoe UI", Font.PLAIN, 13));
         rodape.add(lblQuantidade, BorderLayout.WEST);
 
-        add(conteudo, BorderLayout.CENTER);
-        add(rodape, BorderLayout.SOUTH);
+        conteudo.add(rodape, BorderLayout.SOUTH);
+
+        configurarEventosLista();
+
+        return conteudo;
     }
 
-    private void configurarEventos() {
-        btnNovo.addActionListener(e -> new TelaCadastroAtivo(janelaProprietaria, this));
+    private void configurarEventosLista() {
+        btnNovo.addActionListener(e -> abrirFormularioNovo());
         btnEditar.addActionListener(e -> editarAtivoSelecionado());
         btnExcluir.addActionListener(e -> excluirAtivoSelecionado());
-        btnHistorico.addActionListener(e -> verHistoricoSelecionado());
         btnAtualizar.addActionListener(e -> carregarTabela());
 
         txtPesquisa.getDocument().addDocumentListener(new DocumentListener() {
@@ -185,7 +226,7 @@ public class PainelAtivos extends JPanel {
         int linha = tabela.getSelectedRow();
 
         if (linha == -1) {
-            JOptionPane.showMessageDialog(this, "Selecione um ativo na tabela.");
+            Toast.mostrar(this, "Selecione um ativo na tabela.", Toast.Tipo.AVISO);
             return -1;
         }
 
@@ -200,11 +241,11 @@ public class PainelAtivos extends JPanel {
         Ativo ativo = ativoDAO.buscarPorId(id);
 
         if (ativo == null) {
-            JOptionPane.showMessageDialog(this, "Ativo não encontrado.");
+            Toast.mostrar(this, "Ativo não encontrado.", Toast.Tipo.ERRO);
             return;
         }
 
-        new TelaCadastroAtivo(janelaProprietaria, this, ativo);
+        abrirFormularioEdicao(ativo);
     }
 
     private void excluirAtivoSelecionado() {
@@ -217,15 +258,277 @@ public class PainelAtivos extends JPanel {
         if (opcao == JOptionPane.YES_OPTION) {
             ativoDAO.excluir(id);
             carregarTabela();
-            JOptionPane.showMessageDialog(this, "Ativo excluído com sucesso.");
+            Toast.mostrar(this, "Ativo excluído com sucesso.", Toast.Tipo.SUCESSO);
         }
     }
 
-    private void verHistoricoSelecionado() {
-        int id = obterIdSelecionado();
+    // ================= FORMULÁRIO (substitui a lista no mesmo painel) =================
 
-        if (id == -1) return;
+    private JPanel construirPainelFormulario() {
+        JPanel raiz = new JPanel(new BorderLayout());
+        raiz.setBackground(Cores.FUNDO);
 
-        new TelaHistorico(id);
+        JPanel topo = new JPanel(new BorderLayout());
+        topo.setBackground(Cores.PRIMARIA);
+        topo.setBorder(BorderFactory.createEmptyBorder(18, 32, 18, 32));
+
+        lblTituloFormulario = new JLabel("Novo Ativo");
+        lblTituloFormulario.setForeground(Color.WHITE);
+        lblTituloFormulario.setFont(new Font("Segoe UI", Font.BOLD, 22));
+
+        JButton btnVoltar = new JButton("← Voltar pra lista");
+        btnVoltar.setOpaque(false);
+        btnVoltar.setContentAreaFilled(false);
+        btnVoltar.setBorderPainted(false);
+        btnVoltar.setForeground(Color.WHITE);
+        btnVoltar.setFont(new Font("Segoe UI", Font.PLAIN, 13));
+        btnVoltar.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        btnVoltar.addActionListener(e -> cardLayout.show(painelCards, CARD_LISTA));
+
+        topo.add(lblTituloFormulario, BorderLayout.WEST);
+        topo.add(btnVoltar, BorderLayout.EAST);
+
+        JPanel form = new JPanel(new GridBagLayout());
+        form.setBackground(Cores.FUNDO);
+        form.setBorder(BorderFactory.createEmptyBorder(28, 45, 20, 45));
+
+        txtTipo = criarCampo();
+        txtMarca = criarCampo();
+        txtModelo = criarCampo();
+        txtNumeroSerie = criarCampo();
+
+        cbUnidade = new JComboBox<>();
+        cbUnidade.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+
+        cbResponsavel = new JComboBox<>();
+        cbResponsavel.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+
+        cbStatus = new JComboBox<>(new String[]{"Disponível", "Em uso", "Manutenção", "Aguardando formatação"});
+        cbStatus.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+
+        txtObservacoes = new JTextArea(5, 20);
+        txtObservacoes.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        txtObservacoes.setLineWrap(true);
+        txtObservacoes.setWrapStyleWord(true);
+
+        adicionarLinha(form, 0, "Tipo:", txtTipo);
+        adicionarLinha(form, 1, "Marca:", txtMarca);
+        adicionarLinha(form, 2, "Modelo:", txtModelo);
+        adicionarLinha(form, 3, "Número de Série:", txtNumeroSerie);
+        adicionarLinha(form, 4, "Unidade:", cbUnidade);
+        adicionarLinha(form, 5, "Responsável:", cbResponsavel);
+        adicionarLinha(form, 6, "Status:", cbStatus);
+
+        JLabel lblObs = new JLabel("Observações:");
+        lblObs.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = 7;
+        gbc.anchor = GridBagConstraints.NORTHWEST;
+        gbc.insets = new Insets(10, 0, 0, 12);
+        form.add(lblObs, gbc);
+
+        JScrollPane scrollObs = new JScrollPane(txtObservacoes);
+        gbc.gridx = 1;
+        gbc.gridy = 7;
+        gbc.weightx = 1;
+        gbc.fill = GridBagConstraints.BOTH;
+        gbc.insets = new Insets(10, 0, 0, 0);
+        form.add(scrollObs, gbc);
+
+        JPanel botoes = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 16));
+        botoes.setBackground(Cores.FUNDO);
+        botoes.setBorder(BorderFactory.createEmptyBorder(0, 45, 20, 0));
+
+        JButton btnSalvar = new JButton("Salvar");
+        JButton btnCancelar = new JButton("Cancelar");
+
+        Cores.estilizarBotaoPrimario(btnSalvar);
+        Cores.estilizarBotaoSecundario(btnCancelar);
+
+        btnSalvar.setPreferredSize(new Dimension(120, 38));
+        btnCancelar.setPreferredSize(new Dimension(120, 38));
+
+        botoes.add(btnSalvar);
+        botoes.add(btnCancelar);
+
+        btnSalvar.addActionListener(e -> salvarFormulario());
+        btnCancelar.addActionListener(e -> cardLayout.show(painelCards, CARD_LISTA));
+
+        JPanel centro = new JPanel(new BorderLayout());
+        centro.setBackground(Cores.FUNDO);
+        centro.add(form, BorderLayout.CENTER);
+        centro.add(botoes, BorderLayout.SOUTH);
+
+        raiz.add(topo, BorderLayout.NORTH);
+        raiz.add(new JScrollPane(centro), BorderLayout.CENTER);
+
+        return raiz;
+    }
+
+    private JTextField criarCampo() {
+        JTextField campo = new JTextField();
+        campo.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        return campo;
+    }
+
+    private void adicionarLinha(JPanel painel, int linha, String texto, JComponent campo) {
+        JLabel label = new JLabel(texto);
+        label.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.gridx = 0;
+        gbc.gridy = linha;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.insets = new Insets(8, 0, 8, 12);
+        painel.add(label, gbc);
+
+        gbc.gridx = 1;
+        gbc.gridy = linha;
+        gbc.weightx = 1;
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.insets = new Insets(8, 0, 8, 0);
+        campo.setPreferredSize(new Dimension(420, 34));
+        painel.add(campo, gbc);
+    }
+
+    private void abrirFormularioNovo() {
+        ativoEmEdicao = null;
+        lblTituloFormulario.setText("Novo Ativo");
+        limparFormulario();
+        carregarCombosFormulario();
+        cardLayout.show(painelCards, CARD_FORMULARIO);
+    }
+
+    private void abrirFormularioEdicao(Ativo ativo) {
+        ativoEmEdicao = ativo;
+        lblTituloFormulario.setText("Editar Ativo");
+        carregarCombosFormulario();
+        preencherFormulario(ativo);
+        cardLayout.show(painelCards, CARD_FORMULARIO);
+    }
+
+    private void limparFormulario() {
+        txtTipo.setText("");
+        txtMarca.setText("");
+        txtModelo.setText("");
+        txtNumeroSerie.setText("");
+        txtObservacoes.setText("");
+        cbStatus.setSelectedIndex(0);
+    }
+
+    private void carregarCombosFormulario() {
+        cbUnidade.removeAllItems();
+        List<Unidade> unidades = unidadeDAO.listarAtivas();
+
+        if (unidades.isEmpty()) {
+            Toast.mostrar(this, "Nenhuma unidade cadastrada — cadastre uma unidade primeiro.", Toast.Tipo.AVISO);
+        }
+
+        for (Unidade unidade : unidades) {
+            cbUnidade.addItem(unidade);
+        }
+
+        cbResponsavel.removeAllItems();
+        cbResponsavel.addItem(null); // "sem responsável" — ativo Disponível não precisa de um
+
+        for (Colaborador colaborador : colaboradorDAO.listarAtivos()) {
+            cbResponsavel.addItem(colaborador);
+        }
+
+        cbResponsavel.setRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList<?> list, Object value, int index,
+                                                          boolean isSelected, boolean cellHasFocus) {
+                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                if (value == null) {
+                    setText("(sem responsável)");
+                } else if (value instanceof Colaborador colaborador) {
+                    setText(colaborador.getNome()
+                            + (colaborador.getCargo() != null ? " - " + colaborador.getCargo() : ""));
+                }
+                return this;
+            }
+        });
+    }
+
+    private void preencherFormulario(Ativo ativo) {
+        txtTipo.setText(ativo.getTipo());
+        txtMarca.setText(ativo.getMarca());
+        txtModelo.setText(ativo.getModelo());
+        txtNumeroSerie.setText(ativo.getNumeroSerie());
+        cbStatus.setSelectedItem(ativo.getStatus());
+        txtObservacoes.setText(ativo.getObservacoes());
+
+        for (int i = 0; i < cbUnidade.getItemCount(); i++) {
+            Unidade unidade = cbUnidade.getItemAt(i);
+            if (unidade.getNome().equals(ativo.getUnidade())) {
+                cbUnidade.setSelectedIndex(i);
+                break;
+            }
+        }
+
+        if (ativo.getResponsavelId() != null) {
+            for (int i = 0; i < cbResponsavel.getItemCount(); i++) {
+                Colaborador colaborador = cbResponsavel.getItemAt(i);
+                if (colaborador != null && colaborador.getId() == ativo.getResponsavelId()) {
+                    cbResponsavel.setSelectedIndex(i);
+                    break;
+                }
+            }
+        }
+    }
+
+    private void salvarFormulario() {
+        if (!validarFormulario()) return;
+
+        Ativo ativo = ativoEmEdicao == null ? new Ativo() : ativoEmEdicao;
+
+        Unidade unidadeSelecionada = (Unidade) cbUnidade.getSelectedItem();
+        Colaborador responsavelSelecionado = (Colaborador) cbResponsavel.getSelectedItem();
+
+        ativo.setTipo(txtTipo.getText().trim());
+        ativo.setMarca(txtMarca.getText().trim());
+        ativo.setModelo(txtModelo.getText().trim());
+        ativo.setNumeroSerie(txtNumeroSerie.getText().trim());
+        ativo.setUnidade(unidadeSelecionada.getNome());
+        ativo.setResponsavelId(responsavelSelecionado != null ? responsavelSelecionado.getId() : null);
+        ativo.setStatus(cbStatus.getSelectedItem().toString());
+        ativo.setObservacoes(txtObservacoes.getText().trim());
+
+        if (ativoEmEdicao == null) {
+            ativoDAO.salvar(ativo);
+            Toast.mostrar(this, "Ativo cadastrado com sucesso.", Toast.Tipo.SUCESSO);
+        } else {
+            ativoDAO.atualizar(ativo);
+            Toast.mostrar(this, "Ativo atualizado com sucesso.", Toast.Tipo.SUCESSO);
+        }
+
+        carregarTabela();
+        cardLayout.show(painelCards, CARD_LISTA);
+    }
+
+    private boolean validarFormulario() {
+        if (txtTipo.getText().trim().isEmpty()
+                || txtMarca.getText().trim().isEmpty()
+                || txtModelo.getText().trim().isEmpty()) {
+
+            Toast.mostrar(this, "Preencha os campos obrigatórios: Tipo, Marca e Modelo.", Toast.Tipo.AVISO);
+            return false;
+        }
+
+        if (cbUnidade.getSelectedItem() == null) {
+            Toast.mostrar(this, "Selecione uma unidade. Se a lista estiver vazia, cadastre uma unidade primeiro.", Toast.Tipo.AVISO);
+            return false;
+        }
+
+        String statusSelecionado = (String) cbStatus.getSelectedItem();
+        if (!"Disponível".equals(statusSelecionado) && cbResponsavel.getSelectedItem() == null) {
+            Toast.mostrar(this, "Selecione um responsável — obrigatório quando o status não é 'Disponível'.", Toast.Tipo.AVISO);
+            return false;
+        }
+
+        return true;
     }
 }

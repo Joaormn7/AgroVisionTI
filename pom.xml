@@ -3,7 +3,6 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
          http://maven.apache.org/xsd/maven-4.0.0.xsd">
-
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>br.com.agrovisionti</groupId>
@@ -17,7 +16,6 @@
     </properties>
 
     <dependencies>
-
         <!-- MySQL -->
         <dependency>
             <groupId>com.mysql</groupId>
@@ -39,6 +37,11 @@
             <version>3.6</version>
         </dependency>
 
+        <!-- PDFBox - geracao do PDF do Termo de Responsabilidade -->
+        <dependency>
+            <groupId>org.apache.pdfbox</groupId>
+            <artifactId>pdfbox</artifactId>
+            <version>3.0.3</version>
+        </dependency>
     </dependencies>
-
 </project>

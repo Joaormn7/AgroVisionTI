@@ -90,6 +90,9 @@ public class TelaCadastroColaborador extends JDialog {
         JButton btnSalvar = new JButton(colaboradorEmEdicao == null ? "Salvar" : "Atualizar");
         JButton btnCancelar = new JButton("Cancelar");
 
+        Cores.estilizarBotaoPrimario(btnSalvar);
+        Cores.estilizarBotaoSecundario(btnCancelar);
+
         botoes.add(btnSalvar);
         botoes.add(btnCancelar);
 
@@ -125,9 +128,7 @@ public class TelaCadastroColaborador extends JDialog {
         List<Unidade> unidades = unidadeDAO.listarAtivas();
 
         if (unidades.isEmpty()) {
-            JOptionPane.showMessageDialog(this,
-                    "Nenhuma unidade cadastrada ainda. Cadastre uma unidade antes de cadastrar um colaborador.",
-                    "Aviso", JOptionPane.WARNING_MESSAGE);
+            Toast.mostrar(this, "Nenhuma unidade cadastrada — cadastre uma unidade antes de cadastrar um colaborador.", Toast.Tipo.AVISO);
         }
 
         for (Unidade unidade : unidades) {
@@ -151,38 +152,40 @@ public class TelaCadastroColaborador extends JDialog {
         try {
             if (colaboradorEmEdicao == null) {
                 colaboradorDAO.salvar(colaborador);
-                JOptionPane.showMessageDialog(this, "Colaborador cadastrado com sucesso.");
+                Toast.mostrar(janelaPaiOuThis(), "Colaborador cadastrado com sucesso.", Toast.Tipo.SUCESSO);
             } else {
                 colaboradorDAO.atualizar(colaborador);
-                JOptionPane.showMessageDialog(this, "Colaborador atualizado com sucesso.");
+                Toast.mostrar(janelaPaiOuThis(), "Colaborador atualizado com sucesso.", Toast.Tipo.SUCESSO);
             }
 
             aoSalvar.run();
             dispose();
 
         } catch (RuntimeException e) {
-            JOptionPane.showMessageDialog(this,
-                    "Erro ao salvar colaborador. Verifique se o CPF já está cadastrado.",
-                    "Erro", JOptionPane.ERROR_MESSAGE);
+            Toast.mostrar(this, "Erro ao salvar colaborador. Verifique se o CPF já está cadastrado.", Toast.Tipo.ERRO);
         }
+    }
+
+    private Window janelaPaiOuThis() {
+        Window dono = getOwner();
+        return dono != null ? dono : this;
     }
 
     private boolean validarCampos() {
         if (txtNome.getText().trim().length() < 2) {
-            JOptionPane.showMessageDialog(this, "Informe um nome válido.");
+            Toast.mostrar(this, "Informe um nome válido.", Toast.Tipo.AVISO);
             return false;
         }
 
         String cpfDigitos = txtCpf.getText().replaceAll("\\D", "");
 
         if (cpfDigitos.length() != 11) {
-            JOptionPane.showMessageDialog(this, "CPF inválido — informe os 11 dígitos.");
+            Toast.mostrar(this, "CPF inválido — informe os 11 dígitos.", Toast.Tipo.AVISO);
             return false;
         }
 
         if (cbUnidade.getSelectedItem() == null) {
-            JOptionPane.showMessageDialog(this,
-                    "Selecione uma unidade. Se a lista estiver vazia, cadastre uma unidade primeiro.");
+            Toast.mostrar(this, "Selecione uma unidade. Se a lista estiver vazia, cadastre uma unidade primeiro.", Toast.Tipo.AVISO);
             return false;
         }
 

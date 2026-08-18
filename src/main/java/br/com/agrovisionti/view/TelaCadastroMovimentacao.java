@@ -17,6 +17,7 @@ public class TelaCadastroMovimentacao extends JFrame {
     private final ColaboradorDAO colaboradorDAO = new ColaboradorDAO();
     private final MovimentacaoDAO movimentacaoDAO = new MovimentacaoDAO();
     private final Runnable aoSalvar;
+    private final Window janelaProprietaria;
 
     private JComboBox<Ativo> comboAtivo;
     private JLabel labelUnidadeAtual;
@@ -26,18 +27,19 @@ public class TelaCadastroMovimentacao extends JFrame {
     private JTextArea campoObservacoes;
 
     public TelaCadastroMovimentacao() {
-        this(() -> {});
+        this(null, () -> {});
     }
 
     public TelaCadastroMovimentacao(TelaMovimentacoes telaPai) {
-        this(telaPai::carregarTabela);
+        this(telaPai, telaPai::carregarTabela);
     }
 
     public TelaCadastroMovimentacao(PainelMovimentacoes painelMovimentacoes) {
-        this(painelMovimentacoes::carregarTabela);
+        this(SwingUtilities.getWindowAncestor(painelMovimentacoes), painelMovimentacoes::carregarTabela);
     }
 
-    private TelaCadastroMovimentacao(Runnable aoSalvar) {
+    private TelaCadastroMovimentacao(Window janelaProprietaria, Runnable aoSalvar) {
+        this.janelaProprietaria = janelaProprietaria;
         this.aoSalvar = aoSalvar;
 
         setTitle("AgroVisionTI - Cadastro de Movimentação");
@@ -123,6 +125,9 @@ public class TelaCadastroMovimentacao extends JFrame {
         JButton botaoCancelar = new JButton("Cancelar");
         botaoCancelar.addActionListener(e -> dispose());
 
+        Cores.estilizarBotaoPrimario(botaoSalvar);
+        Cores.estilizarBotaoSecundario(botaoCancelar);
+
         painelBotoes.add(botaoSalvar);
         painelBotoes.add(botaoCancelar);
 
@@ -143,9 +148,7 @@ public class TelaCadastroMovimentacao extends JFrame {
         List<Colaborador> colaboradores = colaboradorDAO.listarAtivos();
 
         if (colaboradores.isEmpty()) {
-            JOptionPane.showMessageDialog(this,
-                    "Nenhum colaborador cadastrado ainda. Cadastre um colaborador antes de registrar a movimentação.",
-                    "Aviso", JOptionPane.WARNING_MESSAGE);
+            Toast.mostrar(janelaPaiOuThis(), "Nenhum colaborador cadastrado — cadastre um antes de registrar a movimentação.", Toast.Tipo.AVISO);
         }
 
         for (Colaborador colaborador : colaboradores) {
@@ -189,7 +192,7 @@ public class TelaCadastroMovimentacao extends JFrame {
         Ativo ativoSelecionado = (Ativo) comboAtivo.getSelectedItem();
 
         if (ativoSelecionado == null) {
-            JOptionPane.showMessageDialog(this, "Selecione um ativo.", "Aviso", JOptionPane.WARNING_MESSAGE);
+            Toast.mostrar(this, "Selecione um ativo.", Toast.Tipo.AVISO);
             return;
         }
 
@@ -197,8 +200,7 @@ public class TelaCadastroMovimentacao extends JFrame {
         Colaborador novoResponsavel = (Colaborador) comboNovoResponsavel.getSelectedItem();
 
         if (novaUnidade.isEmpty() || novoResponsavel == null) {
-            JOptionPane.showMessageDialog(this, "Preencha a nova unidade e selecione o novo responsável.",
-                    "Aviso", JOptionPane.WARNING_MESSAGE);
+            Toast.mostrar(this, "Preencha a nova unidade e selecione o novo responsável.", Toast.Tipo.AVISO);
             return;
         }
 
@@ -214,16 +216,21 @@ public class TelaCadastroMovimentacao extends JFrame {
         boolean sucesso = movimentacaoDAO.cadastrar(movimentacao);
 
         if (sucesso) {
-            JOptionPane.showMessageDialog(this, "Movimentação registrada com sucesso!",
-                    "Sucesso", JOptionPane.INFORMATION_MESSAGE);
+            Toast.mostrar(janelaPaiOuThis(), "Movimentação registrada com sucesso!", Toast.Tipo.SUCESSO);
 
             aoSalvar.run();
 
             dispose();
         } else {
-            JOptionPane.showMessageDialog(this, "Não foi possível registrar a movimentação.",
-                    "Erro", JOptionPane.ERROR_MESSAGE);
+            Toast.mostrar(this, "Não foi possível registrar a movimentação.", Toast.Tipo.ERRO);
         }
+    }
+
+    // Essa tela é uma janela própria (JFrame), não um dialog — o toast precisa
+    // "morar" na janela que ficou aberta por trás, senão desaparece junto
+    // quando essa tela fecha.
+    private Window janelaPaiOuThis() {
+        return janelaProprietaria != null ? janelaProprietaria : this;
     }
 
     private static class AtivoComboRenderer extends DefaultListCellRenderer {

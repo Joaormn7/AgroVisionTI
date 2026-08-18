@@ -11,6 +11,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.util.List;
+import java.util.Map;
 
 public class PainelColaboradores extends JPanel {
 
@@ -18,6 +19,11 @@ public class PainelColaboradores extends JPanel {
     private final UnidadeDAO unidadeDAO = new UnidadeDAO();
     private final Window janelaProprietaria;
     private final boolean podeEditar;
+
+    private static final Map<String, Color> CORES_STATUS = Map.of(
+            "Ativo", Cores.STATUS_DISPONIVEL,
+            "Desativado", Cores.SUBTITULO
+    );
 
     private JTextField txtPesquisa;
     private JButton btnNovo;
@@ -73,6 +79,12 @@ public class PainelColaboradores extends JPanel {
         btnReativar = new JButton("Reativar");
         btnAtualizar = new JButton("Atualizar");
 
+        Cores.estilizarBotaoPrimario(btnNovo);
+        Cores.estilizarBotaoSecundario(btnEditar);
+        Cores.estilizarBotaoPerigo(btnDesativar);
+        Cores.estilizarBotaoSecundario(btnReativar);
+        Cores.estilizarBotaoSecundario(btnAtualizar);
+
         botoes.add(btnNovo);
         botoes.add(btnEditar);
         botoes.add(btnDesativar);
@@ -105,11 +117,15 @@ public class PainelColaboradores extends JPanel {
 
         tabela = new JTable(modeloTabela);
         tabela.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        tabela.setRowHeight(30);
+        tabela.setRowHeight(34);
         tabela.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 13));
         tabela.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
+        TabelaUtil.aplicarEstiloPadrao(tabela);
+        tabela.getColumnModel().getColumn(6).setCellRenderer(new BadgeCellRenderer(CORES_STATUS));
+
         JScrollPane scroll = new JScrollPane(tabela);
+        scroll.setBorder(BorderFactory.createLineBorder(Cores.BORDA));
 
         conteudo.add(areaSuperior, BorderLayout.NORTH);
         conteudo.add(scroll, BorderLayout.CENTER);
@@ -186,7 +202,7 @@ public class PainelColaboradores extends JPanel {
         int linha = tabela.getSelectedRow();
 
         if (linha == -1) {
-            JOptionPane.showMessageDialog(this, "Selecione um colaborador na tabela.");
+            Toast.mostrar(this, "Selecione um colaborador na tabela.", Toast.Tipo.AVISO);
             return -1;
         }
 
@@ -201,7 +217,7 @@ public class PainelColaboradores extends JPanel {
         Colaborador colaborador = colaboradorDAO.buscarPorId(id);
 
         if (colaborador == null) {
-            JOptionPane.showMessageDialog(this, "Colaborador não encontrado.");
+            Toast.mostrar(this, "Colaborador não encontrado.", Toast.Tipo.ERRO);
             return;
         }
 
@@ -215,6 +231,7 @@ public class PainelColaboradores extends JPanel {
 
         if (ativar) {
             colaboradorDAO.reativar(id);
+            Toast.mostrar(this, "Colaborador reativado.", Toast.Tipo.SUCESSO);
         } else {
             int opcao = JOptionPane.showConfirmDialog(this, "Deseja realmente desativar este colaborador?",
                     "Confirmação", JOptionPane.YES_NO_OPTION);
@@ -222,6 +239,7 @@ public class PainelColaboradores extends JPanel {
             if (opcao != JOptionPane.YES_OPTION) return;
 
             colaboradorDAO.desativar(id);
+            Toast.mostrar(this, "Colaborador desativado.", Toast.Tipo.SUCESSO);
         }
 
         carregarTabela();

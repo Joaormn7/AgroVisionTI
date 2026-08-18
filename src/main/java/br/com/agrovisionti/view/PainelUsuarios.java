@@ -7,11 +7,22 @@ import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.util.List;
+import java.util.Map;
 
 public class PainelUsuarios extends JPanel {
 
     private final UsuarioDAO usuarioDAO = new UsuarioDAO();
     private final Window janelaProprietaria;
+
+    private static final Map<String, Color> CORES_STATUS = Map.of(
+            "Ativo", Cores.STATUS_DISPONIVEL,
+            "Desativado", Cores.SUBTITULO
+    );
+
+    private static final Map<String, Color> CORES_PERFIL = Map.of(
+            "Administrador", Cores.PRIMARIA,
+            "Visualizador", Cores.SUBTITULO
+    );
 
     private JButton btnNovo;
     private JButton btnEditar;
@@ -53,6 +64,12 @@ public class PainelUsuarios extends JPanel {
         btnReativar = new JButton("Reativar");
         btnAtualizar = new JButton("Atualizar");
 
+        Cores.estilizarBotaoPrimario(btnNovo);
+        Cores.estilizarBotaoSecundario(btnEditar);
+        Cores.estilizarBotaoPerigo(btnDesativar);
+        Cores.estilizarBotaoSecundario(btnReativar);
+        Cores.estilizarBotaoSecundario(btnAtualizar);
+
         botoes.add(btnNovo);
         botoes.add(btnEditar);
         botoes.add(btnDesativar);
@@ -71,11 +88,16 @@ public class PainelUsuarios extends JPanel {
 
         tabela = new JTable(modeloTabela);
         tabela.setFont(new Font("Segoe UI", Font.PLAIN, 13));
-        tabela.setRowHeight(30);
+        tabela.setRowHeight(34);
         tabela.getTableHeader().setFont(new Font("Segoe UI", Font.BOLD, 13));
         tabela.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
+        TabelaUtil.aplicarEstiloPadrao(tabela);
+        tabela.getColumnModel().getColumn(3).setCellRenderer(new BadgeCellRenderer(CORES_PERFIL));
+        tabela.getColumnModel().getColumn(4).setCellRenderer(new BadgeCellRenderer(CORES_STATUS));
+
         JScrollPane scroll = new JScrollPane(tabela);
+        scroll.setBorder(BorderFactory.createLineBorder(Cores.BORDA));
 
         conteudo.add(areaSuperior, BorderLayout.NORTH);
         conteudo.add(scroll, BorderLayout.CENTER);
@@ -121,7 +143,7 @@ public class PainelUsuarios extends JPanel {
         int linha = tabela.getSelectedRow();
 
         if (linha == -1) {
-            JOptionPane.showMessageDialog(this, "Selecione um usuário na tabela.");
+            Toast.mostrar(this, "Selecione um usuário na tabela.", Toast.Tipo.AVISO);
             return -1;
         }
 
@@ -139,7 +161,7 @@ public class PainelUsuarios extends JPanel {
                 .orElse(null);
 
         if (usuario == null) {
-            JOptionPane.showMessageDialog(this, "Usuário não encontrado.");
+            Toast.mostrar(this, "Usuário não encontrado.", Toast.Tipo.ERRO);
             return;
         }
 
@@ -153,6 +175,7 @@ public class PainelUsuarios extends JPanel {
 
         if (ativar) {
             usuarioDAO.reativar(id);
+            Toast.mostrar(this, "Usuário reativado.", Toast.Tipo.SUCESSO);
         } else {
             int opcao = JOptionPane.showConfirmDialog(this, "Deseja realmente desativar este usuário?",
                     "Confirmação", JOptionPane.YES_NO_OPTION);
@@ -160,6 +183,7 @@ public class PainelUsuarios extends JPanel {
             if (opcao != JOptionPane.YES_OPTION) return;
 
             usuarioDAO.desativar(id);
+            Toast.mostrar(this, "Usuário desativado.", Toast.Tipo.SUCESSO);
         }
 
         carregarTabela();
