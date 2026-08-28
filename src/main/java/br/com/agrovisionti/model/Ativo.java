@@ -9,7 +9,8 @@ public class Ativo {
     private String marca;
     private String modelo;
     private String numeroSerie;
-    private String unidade;
+    private int unidadeId;
+    private String unidadeNome; // não é coluna da tabela — vem do JOIN com unidades, só para exibição
     private Integer responsavelId;
     private String status;
     private String observacoes;
@@ -19,7 +20,7 @@ public class Ativo {
     }
 
     public Ativo(int id, String tipo, String marca, String modelo,
-                 String numeroSerie, String unidade,
+                 String numeroSerie, int unidadeId,
                  Integer responsavelId, String status,
                  String observacoes, Timestamp dataCadastro) {
 
@@ -28,7 +29,7 @@ public class Ativo {
         this.marca = marca;
         this.modelo = modelo;
         this.numeroSerie = numeroSerie;
-        this.unidade = unidade;
+        this.unidadeId = unidadeId;
         this.responsavelId = responsavelId;
         this.status = status;
         this.observacoes = observacoes;
@@ -75,12 +76,20 @@ public class Ativo {
         this.numeroSerie = numeroSerie;
     }
 
-    public String getUnidade() {
-        return unidade;
+    public int getUnidadeId() {
+        return unidadeId;
     }
 
-    public void setUnidade(String unidade) {
-        this.unidade = unidade;
+    public void setUnidadeId(int unidadeId) {
+        this.unidadeId = unidadeId;
+    }
+
+    public String getUnidadeNome() {
+        return unidadeNome;
+    }
+
+    public void setUnidadeNome(String unidadeNome) {
+        this.unidadeNome = unidadeNome;
     }
 
     public Integer getResponsavelId() {

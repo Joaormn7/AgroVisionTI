@@ -132,7 +132,7 @@ public class TelaRelatorios extends JFrame {
         linha.setPreferredSize(new Dimension(1120, 300));
 
         Map<String, Integer> porStatus = contarPorCampo(ativos, Ativo::getStatus);
-        Map<String, Integer> porUnidade = contarPorCampo(ativos, Ativo::getUnidade);
+        Map<String, Integer> porUnidade = contarPorCampo(ativos, Ativo::getUnidadeNome);
 
         GraficoBarraPanel graficoStatus = new GraficoBarraPanel("Ativos por Status", porStatus, new Color(5, 150, 105));
         GraficoBarraPanel graficoUnidade = new GraficoBarraPanel("Ativos por Unidade", porUnidade, new Color(16, 185, 129));
@@ -183,7 +183,7 @@ public class TelaRelatorios extends JFrame {
             for (Ativo ativo : ativos) {
                 escritor.write(String.format("%d;%s;%s;%s;%s;%s;%s;%s%n",
                         ativo.getId(), ativo.getTipo(), ativo.getMarca(), ativo.getModelo(),
-                        ativo.getNumeroSerie(), ativo.getUnidade(),
+                        ativo.getNumeroSerie(), ativo.getUnidadeNome(),
                         descreverColaborador(ativo.getResponsavelId()), ativo.getStatus()));
             }
 

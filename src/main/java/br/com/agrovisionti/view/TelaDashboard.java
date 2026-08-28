@@ -294,7 +294,7 @@ public class TelaDashboard extends JFrame {
 
         Map<String, Integer> porUnidade = new LinkedHashMap<>();
         for (Ativo ativo : ativos) {
-            porUnidade.merge(ativo.getUnidade(), 1, Integer::sum);
+            porUnidade.merge(ativo.getUnidadeNome(), 1, Integer::sum);
         }
 
         int maior = porUnidade.values().stream().max(Integer::compareTo).orElse(1);
@@ -429,7 +429,7 @@ public class TelaDashboard extends JFrame {
         };
 
         ativos.stream().limit(5).forEach(ativo -> modelo.addRow(new Object[]{
-                ativo.getId(), ativo.getTipo(), ativo.getModelo(), ativo.getUnidade(), ativo.getStatus()
+                ativo.getId(), ativo.getTipo(), ativo.getModelo(), ativo.getUnidadeNome(), ativo.getStatus()
         }));
 
         JTable tabela = new JTable(modelo);

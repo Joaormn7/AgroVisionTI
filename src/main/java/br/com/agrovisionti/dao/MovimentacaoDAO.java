@@ -16,7 +16,9 @@ public class MovimentacaoDAO {
                 + "(ativo_id, unidade_origem, unidade_destino, responsavel_origem_id, responsavel_destino_id, observacoes) "
                 + "VALUES (?, ?, ?, ?, ?, ?)";
 
-        String sqlAtualizarAtivo = "UPDATE ativos SET unidade = ?, responsavel_id = ? WHERE id = ?";
+        // unidade_destino chega como nome (String) — ativos.unidade_id é FK (int), então
+        // resolvemos o id pelo nome numa subquery em vez de gravar o texto direto.
+        String sqlAtualizarAtivo = "UPDATE ativos SET unidade_id = (SELECT id FROM unidades WHERE nome = ?), responsavel_id = ? WHERE id = ?";
 
         try (Connection conexao = Conexao.obterConexao()) {
             conexao.setAutoCommit(false);

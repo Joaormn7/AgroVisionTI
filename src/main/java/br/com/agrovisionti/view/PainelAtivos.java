@@ -203,7 +203,7 @@ public class PainelAtivos extends JPanel {
                     ativo.getMarca(),
                     ativo.getModelo(),
                     ativo.getNumeroSerie(),
-                    ativo.getUnidade(),
+                    ativo.getUnidadeNome(),
                     descreverResponsavel(ativo.getResponsavelId()),
                     ativo.getStatus()
             });
@@ -463,7 +463,7 @@ public class PainelAtivos extends JPanel {
 
         for (int i = 0; i < cbUnidade.getItemCount(); i++) {
             Unidade unidade = cbUnidade.getItemAt(i);
-            if (unidade.getNome().equals(ativo.getUnidade())) {
+            if (unidade.getId() == ativo.getUnidadeId()) {
                 cbUnidade.setSelectedIndex(i);
                 break;
             }
@@ -492,7 +492,7 @@ public class PainelAtivos extends JPanel {
         ativo.setMarca(txtMarca.getText().trim());
         ativo.setModelo(txtModelo.getText().trim());
         ativo.setNumeroSerie(txtNumeroSerie.getText().trim());
-        ativo.setUnidade(unidadeSelecionada.getNome());
+        ativo.setUnidadeId(unidadeSelecionada.getId());
         ativo.setResponsavelId(responsavelSelecionado != null ? responsavelSelecionado.getId() : null);
         ativo.setStatus(cbStatus.getSelectedItem().toString());
         ativo.setObservacoes(txtObservacoes.getText().trim());

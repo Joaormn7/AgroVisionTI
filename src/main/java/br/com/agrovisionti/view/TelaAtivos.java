@@ -180,7 +180,7 @@ public class TelaAtivos extends JFrame {
                     ativo.getMarca(),
                     ativo.getModelo(),
                     ativo.getNumeroSerie(),
-                    ativo.getUnidade(),
+                    ativo.getUnidadeNome(),
                     descreverColaborador(ativo.getResponsavelId()),
                     ativo.getStatus()
             });

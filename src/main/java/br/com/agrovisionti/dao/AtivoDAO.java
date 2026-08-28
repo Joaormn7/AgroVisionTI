@@ -13,7 +13,7 @@ public class AtivoDAO {
 
         String sql = """
                 INSERT INTO ativos
-                (tipo, marca, modelo, numero_serie, unidade,
+                (tipo, marca, modelo, numero_serie, unidade_id,
                  responsavel_id, status, observacoes)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)
                 """;
@@ -27,7 +27,7 @@ public class AtivoDAO {
             stmt.setString(2, ativo.getMarca());
             stmt.setString(3, ativo.getModelo());
             stmt.setString(4, ativo.getNumeroSerie());
-            stmt.setString(5, ativo.getUnidade());
+            stmt.setInt(5, ativo.getUnidadeId());
 
             if (ativo.getResponsavelId() != null) {
                 stmt.setInt(6, ativo.getResponsavelId());
@@ -49,7 +49,13 @@ public class AtivoDAO {
 
         List<Ativo> ativos = new ArrayList<>();
 
-        String sql = "SELECT * FROM ativos WHERE excluido = false ORDER BY id DESC";
+        String sql = """
+                SELECT a.*, u.nome AS unidade_nome
+                FROM ativos a
+                JOIN unidades u ON a.unidade_id = u.id
+                WHERE a.excluido = false
+                ORDER BY a.id DESC
+                """;
 
         try (
                 Connection conexao = Conexao.obterConexao();
@@ -70,7 +76,12 @@ public class AtivoDAO {
 
     public Ativo buscarPorId(int id) {
 
-        String sql = "SELECT * FROM ativos WHERE id = ?";
+        String sql = """
+                SELECT a.*, u.nome AS unidade_nome
+                FROM ativos a
+                JOIN unidades u ON a.unidade_id = u.id
+                WHERE a.id = ?
+                """;
 
         try (
                 Connection conexao = Conexao.obterConexao();
@@ -97,15 +108,16 @@ public class AtivoDAO {
         List<Ativo> ativos = new ArrayList<>();
 
         String sql = """
-                SELECT *
-                FROM ativos
-                WHERE excluido = false
-                  AND (tipo LIKE ?
-                   OR marca LIKE ?
-                   OR modelo LIKE ?
-                   OR unidade LIKE ?
-                   OR status LIKE ?)
-                ORDER BY id DESC
+                SELECT a.*, u.nome AS unidade_nome
+                FROM ativos a
+                JOIN unidades u ON a.unidade_id = u.id
+                WHERE a.excluido = false
+                  AND (a.tipo LIKE ?
+                   OR a.marca LIKE ?
+                   OR a.modelo LIKE ?
+                   OR u.nome LIKE ?
+                   OR a.status LIKE ?)
+                ORDER BY a.id DESC
                 """;
 
         try (
@@ -140,7 +152,7 @@ public class AtivoDAO {
                     marca = ?,
                     modelo = ?,
                     numero_serie = ?,
-                    unidade = ?,
+                    unidade_id = ?,
                     responsavel_id = ?,
                     status = ?,
                     observacoes = ?
@@ -156,7 +168,7 @@ public class AtivoDAO {
             stmt.setString(2, ativo.getMarca());
             stmt.setString(3, ativo.getModelo());
             stmt.setString(4, ativo.getNumeroSerie());
-            stmt.setString(5, ativo.getUnidade());
+            stmt.setInt(5, ativo.getUnidadeId());
 
             if (ativo.getResponsavelId() != null) {
                 stmt.setInt(6, ativo.getResponsavelId());
@@ -205,7 +217,8 @@ public class AtivoDAO {
         ativo.setMarca(rs.getString("marca"));
         ativo.setModelo(rs.getString("modelo"));
         ativo.setNumeroSerie(rs.getString("numero_serie"));
-        ativo.setUnidade(rs.getString("unidade"));
+        ativo.setUnidadeId(rs.getInt("unidade_id"));
+        ativo.setUnidadeNome(rs.getString("unidade_nome"));
 
         int responsavelId = rs.getInt("responsavel_id");
         ativo.setResponsavelId(rs.wasNull() ? null : responsavelId);

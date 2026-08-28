@@ -168,7 +168,7 @@ public class PainelRelatorios extends JPanel {
         linha.setPreferredSize(new Dimension(1120, 260));
 
         Map<String, Integer> porStatus = contarPorCampo(ativos, Ativo::getStatus);
-        Map<String, Integer> porUnidade = contarPorCampo(ativos, Ativo::getUnidade);
+        Map<String, Integer> porUnidade = contarPorCampo(ativos, Ativo::getUnidadeNome);
 
         GraficoBarraPanel graficoStatus = new GraficoBarraPanel("Ativos por Status", porStatus, Cores.PRIMARIA);
         GraficoBarraPanel graficoUnidade = new GraficoBarraPanel("Ativos por Unidade", porUnidade, Cores.PRIMARIA_CLARA);
@@ -280,7 +280,7 @@ public class PainelRelatorios extends JPanel {
         };
 
         ativos.stream().limit(4).forEach(ativo -> modelo.addRow(new Object[]{
-                ativo.getId(), ativo.getTipo(), ativo.getUnidade(), ativo.getStatus()
+                ativo.getId(), ativo.getTipo(), ativo.getUnidadeNome(), ativo.getStatus()
         }));
 
         JTable tabela = new JTable(modelo);
@@ -342,7 +342,7 @@ public class PainelRelatorios extends JPanel {
             for (Ativo ativo : ativos) {
                 escritor.write(String.format("%d;%s;%s;%s;%s;%s;%s;%s%n",
                         ativo.getId(), ativo.getTipo(), ativo.getMarca(), ativo.getModelo(),
-                        ativo.getNumeroSerie(), ativo.getUnidade(),
+                        ativo.getNumeroSerie(), ativo.getUnidadeNome(),
                         descreverColaborador(ativo.getResponsavelId()), ativo.getStatus()));
             }
 

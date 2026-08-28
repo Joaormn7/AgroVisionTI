@@ -3,9 +3,11 @@ package br.com.agrovisionti.view;
 import br.com.agrovisionti.dao.AtivoDAO;
 import br.com.agrovisionti.dao.ColaboradorDAO;
 import br.com.agrovisionti.dao.MovimentacaoDAO;
+import br.com.agrovisionti.dao.UnidadeDAO;
 import br.com.agrovisionti.model.Ativo;
 import br.com.agrovisionti.model.Colaborador;
 import br.com.agrovisionti.model.Movimentacao;
+import br.com.agrovisionti.model.Unidade;
 
 import javax.swing.*;
 import java.awt.*;
@@ -16,13 +18,14 @@ public class TelaCadastroMovimentacao extends JFrame {
     private final AtivoDAO ativoDAO = new AtivoDAO();
     private final ColaboradorDAO colaboradorDAO = new ColaboradorDAO();
     private final MovimentacaoDAO movimentacaoDAO = new MovimentacaoDAO();
+    private final UnidadeDAO unidadeDAO = new UnidadeDAO();
     private final Runnable aoSalvar;
     private final Window janelaProprietaria;
 
     private JComboBox<Ativo> comboAtivo;
     private JLabel labelUnidadeAtual;
     private JLabel labelResponsavelAtual;
-    private JTextField campoNovaUnidade;
+    private JComboBox<Unidade> comboNovaUnidade;
     private JComboBox<Colaborador> comboNovoResponsavel;
     private JTextArea campoObservacoes;
 
@@ -51,6 +54,7 @@ public class TelaCadastroMovimentacao extends JFrame {
         add(construirPainelPrincipal());
         carregarAtivos();
         carregarResponsaveis();
+        carregarUnidades();
         setVisible(true);
     }
 
@@ -89,7 +93,7 @@ public class TelaCadastroMovimentacao extends JFrame {
 
         labelUnidadeAtual = new JLabel("-");
         labelResponsavelAtual = new JLabel("-");
-        campoNovaUnidade = new JTextField();
+        comboNovaUnidade = new JComboBox<>();
         comboNovoResponsavel = new JComboBox<>();
         campoObservacoes = new JTextArea(4, 20);
         campoObservacoes.setLineWrap(true);
@@ -98,7 +102,7 @@ public class TelaCadastroMovimentacao extends JFrame {
         adicionarCampo(formulario, c, "Ativo", comboAtivo);
         adicionarCampo(formulario, c, "Unidade atual", labelUnidadeAtual);
         adicionarCampo(formulario, c, "Responsável atual", labelResponsavelAtual);
-        adicionarCampo(formulario, c, "Nova unidade", campoNovaUnidade);
+        adicionarCampo(formulario, c, "Nova unidade", comboNovaUnidade);
         adicionarCampo(formulario, c, "Novo responsável", comboNovoResponsavel);
         adicionarCampo(formulario, c, "Observações", new JScrollPane(campoObservacoes));
 
@@ -169,6 +173,30 @@ public class TelaCadastroMovimentacao extends JFrame {
         });
     }
 
+    private void carregarUnidades() {
+        List<Unidade> unidades = unidadeDAO.listarAtivas();
+
+        if (unidades.isEmpty()) {
+            Toast.mostrar(janelaPaiOuThis(), "Nenhuma unidade cadastrada — cadastre uma antes de registrar a movimentação.", Toast.Tipo.AVISO);
+        }
+
+        for (Unidade unidade : unidades) {
+            comboNovaUnidade.addItem(unidade);
+        }
+
+        comboNovaUnidade.setRenderer(new DefaultListCellRenderer() {
+            @Override
+            public Component getListCellRendererComponent(JList<?> list, Object value, int index,
+                                                          boolean isSelected, boolean cellHasFocus) {
+                super.getListCellRendererComponent(list, value, index, isSelected, cellHasFocus);
+                if (value instanceof Unidade unidade) {
+                    setText(unidade.getNome());
+                }
+                return this;
+            }
+        });
+    }
+
     private void atualizarLocalizacaoAtual() {
         Ativo selecionado = (Ativo) comboAtivo.getSelectedItem();
 
@@ -178,7 +206,7 @@ public class TelaCadastroMovimentacao extends JFrame {
             return;
         }
 
-        labelUnidadeAtual.setText(selecionado.getUnidade());
+        labelUnidadeAtual.setText(selecionado.getUnidadeNome());
 
         if (selecionado.getResponsavelId() != null) {
             Colaborador responsavelAtual = colaboradorDAO.buscarPorId(selecionado.getResponsavelId());
@@ -196,18 +224,18 @@ public class TelaCadastroMovimentacao extends JFrame {
             return;
         }
 
-        String novaUnidade = campoNovaUnidade.getText().trim();
+        Unidade novaUnidade = (Unidade) comboNovaUnidade.getSelectedItem();
         Colaborador novoResponsavel = (Colaborador) comboNovoResponsavel.getSelectedItem();
 
-        if (novaUnidade.isEmpty() || novoResponsavel == null) {
-            Toast.mostrar(this, "Preencha a nova unidade e selecione o novo responsável.", Toast.Tipo.AVISO);
+        if (novaUnidade == null || novoResponsavel == null) {
+            Toast.mostrar(this, "Selecione a nova unidade e o novo responsável.", Toast.Tipo.AVISO);
             return;
         }
 
         Movimentacao movimentacao = new Movimentacao(
                 ativoSelecionado.getId(),
-                ativoSelecionado.getUnidade(),
-                novaUnidade,
+                ativoSelecionado.getUnidadeNome(),
+                novaUnidade.getNome(),
                 ativoSelecionado.getResponsavelId(),
                 novoResponsavel.getId(),
                 campoObservacoes.getText().trim()
