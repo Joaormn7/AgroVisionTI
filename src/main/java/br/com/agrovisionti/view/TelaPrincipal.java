@@ -23,17 +23,62 @@ public class TelaPrincipal extends JFrame {
     private PainelRelatorios painelRelatorios;
     private PainelUnidades painelUnidades;
     private PainelUsuarios painelUsuarios;
-    private PainelColaboradores painelColaboradores;
 
     public TelaPrincipal(Usuario usuarioLogado) {
         this.usuarioLogado = usuarioLogado;
         setTitle("AgroVisionTI");
+        aplicarIcone(this);
         setSize(1400, 860);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
         setResizable(true);
         setExtendedState(JFrame.MAXIMIZED_BOTH);
         criarComponentes();
+        configurarAtalhoTelaCheia();
+        setVisible(true);
+    }
+
+    private void aplicarIcone(JFrame janela) {
+        List<Image> icones = new ArrayList<>();
+        int[] tamanhos = {16, 32, 48, 64, 128, 256};
+
+        for (int tamanho : tamanhos) {
+            java.net.URL url = getClass().getClassLoader().getResource("icons/logo_" + tamanho + ".png");
+            if (url != null) {
+                icones.add(new ImageIcon(url).getImage());
+            }
+        }
+
+        if (!icones.isEmpty()) {
+            janela.setIconImages(icones);
+        }
+    }
+
+    private boolean telaCheia = false;
+
+    private void configurarAtalhoTelaCheia() {
+        getRootPane().registerKeyboardAction(
+                e -> alternarTelaCheia(),
+                KeyStroke.getKeyStroke("F11"),
+                JComponent.WHEN_IN_FOCUSED_WINDOW
+        );
+    }
+
+    private void alternarTelaCheia() {
+        telaCheia = !telaCheia;
+
+        dispose();
+        setUndecorated(telaCheia);
+
+        if (telaCheia) {
+            java.awt.Rectangle telaInteira = new java.awt.Rectangle(
+                    java.awt.Toolkit.getDefaultToolkit().getScreenSize()
+            );
+            setBounds(telaInteira);
+        } else {
+            setExtendedState(JFrame.MAXIMIZED_BOTH);
+        }
+
         setVisible(true);
     }
 
@@ -48,14 +93,12 @@ public class TelaPrincipal extends JFrame {
         painelRelatorios = new PainelRelatorios();
         painelUnidades = new PainelUnidades(this, usuarioLogado.isAdministrador());
         painelUsuarios = new PainelUsuarios(this);
-        painelColaboradores = new PainelColaboradores(this, usuarioLogado.isAdministrador());
 
         painelCards.add(painelAtivos, "ATIVOS");
         painelCards.add(painelMovimentacoes, "MOVIMENTACOES");
         painelCards.add(painelRelatorios, "RELATORIOS");
         painelCards.add(painelUnidades, "UNIDADES");
         painelCards.add(painelUsuarios, "USUARIOS");
-        painelCards.add(painelColaboradores, "COLABORADORES");
 
         raiz.add(painelCards, BorderLayout.CENTER);
 
@@ -98,19 +141,16 @@ public class TelaPrincipal extends JFrame {
         JButton itemAtivos = criarItemMenu("Ativos", "icons/ativos.svg");
         JButton itemMovimentacoes = criarItemMenu("Movimentações", "icons/movimentacoes.svg");
         JButton itemUnidades = criarItemMenu("Unidades", "icons/unidades.svg");
-        JButton itemColaboradores = criarItemMenu("Colaboradores", "icons/colaboradores.svg");
 
         itensMenu.add(itemRelatorios);
         itensMenu.add(itemAtivos);
         itensMenu.add(itemMovimentacoes);
         itensMenu.add(itemUnidades);
-        itensMenu.add(itemColaboradores);
 
         itemRelatorios.addActionListener(e -> mostrar("RELATORIOS", itemRelatorios));
         itemAtivos.addActionListener(e -> mostrar("ATIVOS", itemAtivos));
         itemMovimentacoes.addActionListener(e -> mostrar("MOVIMENTACOES", itemMovimentacoes));
         itemUnidades.addActionListener(e -> mostrar("UNIDADES", itemUnidades));
-        itemColaboradores.addActionListener(e -> mostrar("COLABORADORES", itemColaboradores));
 
         sidebar.add(logo);
         sidebar.add(subLogo);
@@ -120,7 +160,6 @@ public class TelaPrincipal extends JFrame {
         sidebar.add(itemAtivos);
         sidebar.add(itemMovimentacoes);
         sidebar.add(itemUnidades);
-        sidebar.add(itemColaboradores);
 
         if (usuarioLogado.isAdministrador()) {
             JButton itemUsuarios = criarItemMenu("Usuários", "icons/usuarios.svg");
@@ -207,7 +246,6 @@ public class TelaPrincipal extends JFrame {
             case "RELATORIOS" -> painelRelatorios.atualizar();
             case "UNIDADES" -> painelUnidades.carregarTabela();
             case "USUARIOS" -> painelUsuarios.carregarTabela();
-            case "COLABORADORES" -> painelColaboradores.carregarTabela();
         }
     }
 }

@@ -306,7 +306,7 @@ public class PainelDashboard extends JPanel {
             linha.setMaximumSize(new Dimension(1000, 36));
             linha.setBorder(BorderFactory.createEmptyBorder(6, 0, 6, 0));
 
-            JLabel descricao = new JLabel(mov.getUnidadeOrigem() + " → " + mov.getUnidadeDestino());
+            JLabel descricao = new JLabel((mov.getUnidadeOrigemNome() != null ? mov.getUnidadeOrigemNome() : "-") + " → " + mov.getUnidadeDestinoNome());
             descricao.setFont(new Font("Segoe UI", Font.PLAIN, 13));
             descricao.setForeground(COR_TITULO);
 

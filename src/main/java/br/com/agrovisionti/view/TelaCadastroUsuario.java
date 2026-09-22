@@ -29,7 +29,7 @@ public class TelaCadastroUsuario extends JDialog {
         this.aoSalvar = aoSalvar;
 
         setTitle(usuario == null ? "Novo Usuário" : "Editar Usuário");
-        setSize(440, usuario == null ? 400 : 440);
+        setSize(440, usuario == null ? 430 : 470);
         setLocationRelativeTo(getParent());
         setResizable(false);
 
@@ -66,14 +66,14 @@ public class TelaCadastroUsuario extends JDialog {
         int linha = 0;
 
         gbc.gridy = linha++;
-        form.add(new JLabel("Nome:"), gbc);
+        form.add(new JLabel("<html>Nome: <span style='color:#DC2626;'>*</span></html>"), gbc);
         txtNome = new JTextField();
         txtNome.setPreferredSize(new Dimension(320, 34));
         gbc.gridy = linha++;
         form.add(txtNome, gbc);
 
         gbc.gridy = linha++;
-        form.add(new JLabel("E-mail:"), gbc);
+        form.add(new JLabel("<html>E-mail: <span style='color:#DC2626;'>*</span></html>"), gbc);
         txtEmail = new JTextField();
         txtEmail.setPreferredSize(new Dimension(320, 34));
         gbc.gridy = linha++;
@@ -94,7 +94,9 @@ public class TelaCadastroUsuario extends JDialog {
             form.add(chkAlterarSenha, gbc);
         }
 
-        lblSenha = new JLabel("Senha:");
+        lblSenha = new JLabel(usuarioEmEdicao == null
+                ? "<html>Senha: <span style='color:#DC2626;'>*</span></html>"
+                : "Nova senha:");
         gbc.gridy = linha++;
         form.add(lblSenha, gbc);
 
@@ -107,6 +109,13 @@ public class TelaCadastroUsuario extends JDialog {
             lblSenha.setVisible(false);
             txtSenha.setVisible(false);
         }
+
+        JLabel lblLegenda = new JLabel("* Campos obrigatórios");
+        lblLegenda.setFont(new Font("Segoe UI", Font.ITALIC, 12));
+        lblLegenda.setForeground(new Color(220, 38, 38));
+        gbc.gridy = linha++;
+        gbc.insets = new Insets(10, 0, 6, 0);
+        form.add(lblLegenda, gbc);
 
         JPanel botoes = new JPanel(new FlowLayout(FlowLayout.RIGHT, 10, 10));
         botoes.setBackground(Cores.FUNDO);

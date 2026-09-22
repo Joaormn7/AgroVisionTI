@@ -239,7 +239,7 @@ public class PainelRelatorios extends JPanel {
             linhaDetalhe.setOpaque(false);
             linhaDetalhe.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-            JLabel trajeto = new JLabel(mov.getUnidadeOrigem() + " → " + mov.getUnidadeDestino());
+            JLabel trajeto = new JLabel((mov.getUnidadeOrigemNome() != null ? mov.getUnidadeOrigemNome() : "-") + " → " + mov.getUnidadeDestinoNome());
             trajeto.setFont(new Font("Segoe UI", Font.PLAIN, 12));
             trajeto.setForeground(COR_SUBTITULO);
 

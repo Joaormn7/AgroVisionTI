@@ -13,12 +13,11 @@ public class MovimentacaoDAO {
     // As duas operações acontecem na mesma transação: ou as duas dão certo, ou nenhuma é salva.
     public boolean cadastrar(Movimentacao movimentacao) {
         String sqlInserirMovimentacao = "INSERT INTO movimentacoes "
-                + "(ativo_id, unidade_origem, unidade_destino, responsavel_origem_id, responsavel_destino_id, observacoes) "
+                + "(ativo_id, unidade_origem_id, unidade_destino_id, responsavel_origem_id, responsavel_destino_id, observacoes) "
                 + "VALUES (?, ?, ?, ?, ?, ?)";
 
-        // unidade_destino chega como nome (String) — ativos.unidade_id é FK (int), então
-        // resolvemos o id pelo nome numa subquery em vez de gravar o texto direto.
-        String sqlAtualizarAtivo = "UPDATE ativos SET unidade_id = (SELECT id FROM unidades WHERE nome = ?), responsavel_id = ? WHERE id = ?";
+        // Agora unidade_destino_id já chega como int — não precisa mais de subquery por nome.
+        String sqlAtualizarAtivo = "UPDATE ativos SET unidade_id = ?, responsavel_id = ? WHERE id = ?";
 
         try (Connection conexao = Conexao.obterConexao()) {
             conexao.setAutoCommit(false);
@@ -38,8 +37,14 @@ public class MovimentacaoDAO {
     private void inserirMovimentacao(Connection conexao, String sql, Movimentacao movimentacao) throws SQLException {
         try (PreparedStatement statement = conexao.prepareStatement(sql)) {
             statement.setInt(1, movimentacao.getAtivoId());
-            statement.setString(2, movimentacao.getUnidadeOrigem());
-            statement.setString(3, movimentacao.getUnidadeDestino());
+
+            if (movimentacao.getUnidadeOrigemId() != null) {
+                statement.setInt(2, movimentacao.getUnidadeOrigemId());
+            } else {
+                statement.setNull(2, Types.INTEGER);
+            }
+
+            statement.setInt(3, movimentacao.getUnidadeDestinoId());
 
             if (movimentacao.getResponsavelOrigemId() != null) {
                 statement.setInt(4, movimentacao.getResponsavelOrigemId());
@@ -55,7 +60,7 @@ public class MovimentacaoDAO {
 
     private void atualizarLocalizacaoAtivo(Connection conexao, String sql, Movimentacao movimentacao) throws SQLException {
         try (PreparedStatement statement = conexao.prepareStatement(sql)) {
-            statement.setString(1, movimentacao.getUnidadeDestino());
+            statement.setInt(1, movimentacao.getUnidadeDestinoId());
             statement.setInt(2, movimentacao.getResponsavelDestinoId());
             statement.setInt(3, movimentacao.getAtivoId());
             statement.executeUpdate();
@@ -64,13 +69,26 @@ public class MovimentacaoDAO {
 
     // Retorna o histórico completo de movimentações, mais recentes primeiro.
     public List<Movimentacao> listarTodas() {
-        String sql = "SELECT * FROM movimentacoes ORDER BY data_movimentacao DESC";
+        String sql = """
+                SELECT m.*, uo.nome AS unidade_origem_nome, ud.nome AS unidade_destino_nome
+                FROM movimentacoes m
+                LEFT JOIN unidades uo ON m.unidade_origem_id = uo.id
+                JOIN unidades ud ON m.unidade_destino_id = ud.id
+                ORDER BY m.data_movimentacao DESC
+                """;
         return executarConsulta(sql, null);
     }
 
     // Retorna o histórico de movimentações de um ativo específico.
     public List<Movimentacao> listarPorAtivo(int ativoId) {
-        String sql = "SELECT * FROM movimentacoes WHERE ativo_id = ? ORDER BY data_movimentacao DESC";
+        String sql = """
+                SELECT m.*, uo.nome AS unidade_origem_nome, ud.nome AS unidade_destino_nome
+                FROM movimentacoes m
+                LEFT JOIN unidades uo ON m.unidade_origem_id = uo.id
+                JOIN unidades ud ON m.unidade_destino_id = ud.id
+                WHERE m.ativo_id = ?
+                ORDER BY m.data_movimentacao DESC
+                """;
         return executarConsulta(sql, ativoId);
     }
 
@@ -101,8 +119,13 @@ public class MovimentacaoDAO {
         Movimentacao movimentacao = new Movimentacao();
         movimentacao.setId(resultado.getInt("id"));
         movimentacao.setAtivoId(resultado.getInt("ativo_id"));
-        movimentacao.setUnidadeOrigem(resultado.getString("unidade_origem"));
-        movimentacao.setUnidadeDestino(resultado.getString("unidade_destino"));
+
+        int unidadeOrigemId = resultado.getInt("unidade_origem_id");
+        movimentacao.setUnidadeOrigemId(resultado.wasNull() ? null : unidadeOrigemId);
+        movimentacao.setUnidadeOrigemNome(resultado.getString("unidade_origem_nome"));
+
+        movimentacao.setUnidadeDestinoId(resultado.getInt("unidade_destino_id"));
+        movimentacao.setUnidadeDestinoNome(resultado.getString("unidade_destino_nome"));
 
         int responsavelOrigemId = resultado.getInt("responsavel_origem_id");
         movimentacao.setResponsavelOrigemId(resultado.wasNull() ? null : responsavelOrigemId);

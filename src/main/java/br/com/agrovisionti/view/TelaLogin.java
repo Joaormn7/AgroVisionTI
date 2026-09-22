@@ -14,12 +14,30 @@ public class TelaLogin extends JFrame {
 
     public TelaLogin() {
         setTitle("AgroVisionTI - Login");
-        setSize(520, 420);
+        aplicarIcone(this);
+        setSize(1400, 860);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(EXIT_ON_CLOSE);
-        setResizable(false);
+        setResizable(true);
+        setExtendedState(JFrame.MAXIMIZED_BOTH);
         criarComponentes();
         setVisible(true);
+    }
+
+    private void aplicarIcone(JFrame janela) {
+        java.util.List<Image> icones = new java.util.ArrayList<>();
+        int[] tamanhos = {16, 32, 48, 64, 128, 256};
+
+        for (int tamanho : tamanhos) {
+            java.net.URL url = getClass().getClassLoader().getResource("icons/logo_" + tamanho + ".png");
+            if (url != null) {
+                icones.add(new ImageIcon(url).getImage());
+            }
+        }
+
+        if (!icones.isEmpty()) {
+            janela.setIconImages(icones);
+        }
     }
 
     private void criarComponentes() {
@@ -28,7 +46,7 @@ public class TelaLogin extends JFrame {
 
         JPanel card = new JPanel(new GridBagLayout());
         card.setBackground(Color.WHITE);
-        card.setBorder(BorderFactory.createEmptyBorder(30, 40, 30, 40));
+        card.setBorder(BorderFactory.createEmptyBorder(50, 60, 50, 60));
 
         GridBagConstraints gbc = new GridBagConstraints();
         gbc.insets = new Insets(8, 0, 8, 0);
@@ -36,34 +54,38 @@ public class TelaLogin extends JFrame {
         gbc.gridx = 0;
 
         JLabel titulo = new JLabel("AgroVisionTI", SwingConstants.CENTER);
-        titulo.setFont(new Font("Segoe UI", Font.BOLD, 30));
+        titulo.setFont(new Font("Segoe UI", Font.BOLD, 42));
         titulo.setForeground(Cores.PRIMARIA);
         gbc.gridy = 0;
         card.add(titulo, gbc);
 
         JLabel subtitulo = new JLabel("Gerenciamento de Ativos de TI", SwingConstants.CENTER);
-        subtitulo.setFont(new Font("Segoe UI", Font.PLAIN, 14));
+        subtitulo.setFont(new Font("Segoe UI", Font.PLAIN, 18));
         gbc.gridy = 1;
         card.add(subtitulo, gbc);
 
         JLabel lblEmail = new JLabel("E-mail");
+        lblEmail.setFont(new Font("Segoe UI", Font.PLAIN, 15));
         gbc.gridy = 2;
         gbc.insets = new Insets(20, 0, 4, 0);
         card.add(lblEmail, gbc);
 
         txtEmail = new JTextField();
-        txtEmail.setPreferredSize(new Dimension(340, 36));
+        txtEmail.setPreferredSize(new Dimension(420, 46));
+        txtEmail.setFont(new Font("Segoe UI", Font.PLAIN, 16));
         gbc.gridy = 3;
         gbc.insets = new Insets(0, 0, 8, 0);
         card.add(txtEmail, gbc);
 
         JLabel lblSenha = new JLabel("Senha");
+        lblSenha.setFont(new Font("Segoe UI", Font.PLAIN, 15));
         gbc.gridy = 4;
         gbc.insets = new Insets(8, 0, 4, 0);
         card.add(lblSenha, gbc);
 
         txtSenha = new JPasswordField();
-        txtSenha.setPreferredSize(new Dimension(340, 36));
+        txtSenha.setPreferredSize(new Dimension(420, 46));
+        txtSenha.setFont(new Font("Segoe UI", Font.PLAIN, 16));
         gbc.gridy = 5;
         gbc.insets = new Insets(0, 0, 15, 0);
         card.add(txtSenha, gbc);
@@ -74,8 +96,16 @@ public class TelaLogin extends JFrame {
         btnEntrar = new JButton("Entrar");
         btnSair = new JButton("Sair");
 
-        Cores.estilizarBotaoPrimario(btnEntrar);
-        Cores.estilizarBotaoSecundario(btnSair);
+        btnEntrar.setBackground(Cores.PRIMARIA);
+        btnEntrar.setForeground(Color.WHITE);
+        btnEntrar.setFont(new Font("Segoe UI", Font.BOLD, 16));
+        btnEntrar.setFocusPainted(false);
+        btnEntrar.setOpaque(true);
+        btnEntrar.setBorderPainted(false);
+        btnEntrar.setPreferredSize(new Dimension(0, 46));
+
+        btnSair.setFont(new Font("Segoe UI", Font.PLAIN, 16));
+        btnSair.setPreferredSize(new Dimension(0, 46));
 
         botoes.add(btnEntrar);
         botoes.add(btnSair);
@@ -97,7 +127,7 @@ public class TelaLogin extends JFrame {
         String senha = String.valueOf(txtSenha.getPassword());
 
         if (email.isBlank() || senha.isBlank()) {
-            Toast.mostrar(this, "Informe e-mail e senha.", Toast.Tipo.AVISO);
+            JOptionPane.showMessageDialog(this, "Informe e-mail e senha.");
             return;
         }
 
@@ -113,11 +143,11 @@ public class TelaLogin extends JFrame {
 
             } else {
 
-                Toast.mostrar(this, "E-mail ou senha inválidos.", Toast.Tipo.ERRO);
+                JOptionPane.showMessageDialog(this, "E-mail ou senha inválidos.");
 
             }
         } catch (RuntimeException ex) {
-            Toast.mostrar(this, ex.getMessage(), Toast.Tipo.ERRO);
+            JOptionPane.showMessageDialog(this, ex.getMessage(), "Erro", JOptionPane.ERROR_MESSAGE);
         }
     }
 }

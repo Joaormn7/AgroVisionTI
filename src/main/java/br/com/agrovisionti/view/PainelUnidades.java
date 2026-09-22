@@ -240,7 +240,7 @@ public class PainelUnidades extends JPanel {
         gbc.fill = GridBagConstraints.HORIZONTAL;
         gbc.gridx = 0;
 
-        JLabel lblNome = new JLabel("Nome da unidade:");
+        JLabel lblNome = new JLabel("<html>Nome da unidade: <span style='color:#DC2626;'>*</span></html>");
         gbc.gridy = 0;
         form.add(lblNome, gbc);
 
@@ -260,7 +260,7 @@ public class PainelUnidades extends JPanel {
         gbc.gridy = 3;
         form.add(cbTipo, gbc);
 
-        JLabel lblCnpj = new JLabel("CNPJ:");
+        JLabel lblCnpj = new JLabel("<html>CNPJ: <span style='color:#DC2626;'>*</span></html>");
         gbc.gridy = 4;
         form.add(lblCnpj, gbc);
 
@@ -269,6 +269,13 @@ public class PainelUnidades extends JPanel {
         txtCnpj.setPreferredSize(new Dimension(360, 34));
         gbc.gridy = 5;
         form.add(txtCnpj, gbc);
+
+        JLabel lblLegenda = new JLabel("* Campos obrigatórios");
+        lblLegenda.setFont(new Font("Segoe UI", Font.ITALIC, 12));
+        lblLegenda.setForeground(new Color(220, 38, 38));
+        gbc.gridy = 6;
+        gbc.insets = new Insets(12, 0, 8, 0);
+        form.add(lblLegenda, gbc);
 
         JPanel botoes = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 16));
         botoes.setBackground(Cores.FUNDO);

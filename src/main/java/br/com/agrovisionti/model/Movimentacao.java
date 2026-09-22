@@ -6,8 +6,10 @@ public class Movimentacao {
 
     private int id;
     private int ativoId;
-    private String unidadeOrigem;
-    private String unidadeDestino;
+    private Integer unidadeOrigemId;
+    private String unidadeOrigemNome; // não é coluna da tabela — vem do JOIN com unidades, só para exibição
+    private int unidadeDestinoId;
+    private String unidadeDestinoNome; // idem
     private Integer responsavelOrigemId;
     private int responsavelDestinoId;
     private LocalDateTime dataMovimentacao;
@@ -16,11 +18,11 @@ public class Movimentacao {
     public Movimentacao() {
     }
 
-    public Movimentacao(int ativoId, String unidadeOrigem, String unidadeDestino,
+    public Movimentacao(int ativoId, Integer unidadeOrigemId, int unidadeDestinoId,
                         Integer responsavelOrigemId, int responsavelDestinoId, String observacoes) {
         this.ativoId = ativoId;
-        this.unidadeOrigem = unidadeOrigem;
-        this.unidadeDestino = unidadeDestino;
+        this.unidadeOrigemId = unidadeOrigemId;
+        this.unidadeDestinoId = unidadeDestinoId;
         this.responsavelOrigemId = responsavelOrigemId;
         this.responsavelDestinoId = responsavelDestinoId;
         this.observacoes = observacoes;
@@ -42,20 +44,36 @@ public class Movimentacao {
         this.ativoId = ativoId;
     }
 
-    public String getUnidadeOrigem() {
-        return unidadeOrigem;
+    public Integer getUnidadeOrigemId() {
+        return unidadeOrigemId;
     }
 
-    public void setUnidadeOrigem(String unidadeOrigem) {
-        this.unidadeOrigem = unidadeOrigem;
+    public void setUnidadeOrigemId(Integer unidadeOrigemId) {
+        this.unidadeOrigemId = unidadeOrigemId;
     }
 
-    public String getUnidadeDestino() {
-        return unidadeDestino;
+    public String getUnidadeOrigemNome() {
+        return unidadeOrigemNome;
     }
 
-    public void setUnidadeDestino(String unidadeDestino) {
-        this.unidadeDestino = unidadeDestino;
+    public void setUnidadeOrigemNome(String unidadeOrigemNome) {
+        this.unidadeOrigemNome = unidadeOrigemNome;
+    }
+
+    public int getUnidadeDestinoId() {
+        return unidadeDestinoId;
+    }
+
+    public void setUnidadeDestinoId(int unidadeDestinoId) {
+        this.unidadeDestinoId = unidadeDestinoId;
+    }
+
+    public String getUnidadeDestinoNome() {
+        return unidadeDestinoNome;
+    }
+
+    public void setUnidadeDestinoNome(String unidadeDestinoNome) {
+        this.unidadeDestinoNome = unidadeDestinoNome;
     }
 
     public Integer getResponsavelOrigemId() {

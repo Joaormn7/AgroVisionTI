@@ -46,7 +46,7 @@ public class TelaCadastroMovimentacao extends JFrame {
         this.aoSalvar = aoSalvar;
 
         setTitle("AgroVisionTI - Cadastro de Movimentação");
-        setSize(800, 660);
+        setSize(800, 680);
         setLocationRelativeTo(null);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
         setResizable(false);
@@ -99,18 +99,26 @@ public class TelaCadastroMovimentacao extends JFrame {
         campoObservacoes.setLineWrap(true);
         campoObservacoes.setWrapStyleWord(true);
 
-        adicionarCampo(formulario, c, "Ativo", comboAtivo);
-        adicionarCampo(formulario, c, "Unidade atual", labelUnidadeAtual);
-        adicionarCampo(formulario, c, "Responsável atual", labelResponsavelAtual);
-        adicionarCampo(formulario, c, "Nova unidade", comboNovaUnidade);
-        adicionarCampo(formulario, c, "Novo responsável", comboNovoResponsavel);
-        adicionarCampo(formulario, c, "Observações", new JScrollPane(campoObservacoes));
+        adicionarCampo(formulario, c, "Ativo", comboAtivo, true);
+        adicionarCampo(formulario, c, "Unidade atual", labelUnidadeAtual, false);
+        adicionarCampo(formulario, c, "Responsável atual", labelResponsavelAtual, false);
+        adicionarCampo(formulario, c, "Nova unidade", comboNovaUnidade, true);
+        adicionarCampo(formulario, c, "Novo responsável", comboNovoResponsavel, true);
+        adicionarCampo(formulario, c, "Observações", new JScrollPane(campoObservacoes), false);
+
+        JLabel lblLegenda = new JLabel("* Campos obrigatórios");
+        lblLegenda.setFont(new Font("Segoe UI", Font.ITALIC, 12));
+        lblLegenda.setForeground(new Color(220, 38, 38));
+        formulario.add(lblLegenda, c);
+        c.gridy++;
 
         return formulario;
     }
 
-    private void adicionarCampo(JPanel formulario, GridBagConstraints c, String rotulo, JComponent campo) {
-        JLabel label = new JLabel(rotulo);
+    private void adicionarCampo(JPanel formulario, GridBagConstraints c, String rotulo, JComponent campo, boolean obrigatorio) {
+        JLabel label = new JLabel(obrigatorio
+                ? "<html>" + rotulo + " <span style='color:#DC2626;'>*</span></html>"
+                : rotulo);
         label.setFont(new Font("Segoe UI", Font.BOLD, 14));
 
         formulario.add(label, c);
@@ -234,8 +242,8 @@ public class TelaCadastroMovimentacao extends JFrame {
 
         Movimentacao movimentacao = new Movimentacao(
                 ativoSelecionado.getId(),
-                ativoSelecionado.getUnidadeNome(),
-                novaUnidade.getNome(),
+                ativoSelecionado.getUnidadeId(),
+                novaUnidade.getId(),
                 ativoSelecionado.getResponsavelId(),
                 novoResponsavel.getId(),
                 campoObservacoes.getText().trim()

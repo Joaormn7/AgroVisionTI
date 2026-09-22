@@ -133,8 +133,8 @@ public class TelaMovimentacoes extends JFrame {
             modeloTabela.addRow(new Object[]{
                     mov.getId(),
                     descreverAtivo(mov.getAtivoId()),
-                    mov.getUnidadeOrigem(),
-                    mov.getUnidadeDestino(),
+                    mov.getUnidadeOrigemNome() != null ? mov.getUnidadeOrigemNome() : "-",
+                    mov.getUnidadeDestinoNome(),
                     descreverColaborador(mov.getResponsavelOrigemId()),
                     descreverColaborador(mov.getResponsavelDestinoId()),
                     mov.getDataMovimentacao() != null ? mov.getDataMovimentacao().format(FORMATO_DATA) : "-",

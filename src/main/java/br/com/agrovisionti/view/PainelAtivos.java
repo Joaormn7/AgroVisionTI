@@ -311,13 +311,13 @@ public class PainelAtivos extends JPanel {
         txtObservacoes.setLineWrap(true);
         txtObservacoes.setWrapStyleWord(true);
 
-        adicionarLinha(form, 0, "Tipo:", txtTipo);
-        adicionarLinha(form, 1, "Marca:", txtMarca);
-        adicionarLinha(form, 2, "Modelo:", txtModelo);
-        adicionarLinha(form, 3, "Número de Série:", txtNumeroSerie);
-        adicionarLinha(form, 4, "Unidade:", cbUnidade);
-        adicionarLinha(form, 5, "Responsável:", cbResponsavel);
-        adicionarLinha(form, 6, "Status:", cbStatus);
+        adicionarLinha(form, 0, "Tipo:", txtTipo, true);
+        adicionarLinha(form, 1, "Marca:", txtMarca, true);
+        adicionarLinha(form, 2, "Modelo:", txtModelo, true);
+        adicionarLinha(form, 3, "Número de Série:", txtNumeroSerie, false);
+        adicionarLinha(form, 4, "Unidade:", cbUnidade, true);
+        adicionarLinha(form, 5, "Responsável:", cbResponsavel, false);
+        adicionarLinha(form, 6, "Status:", cbStatus, false);
 
         JLabel lblObs = new JLabel("Observações:");
         lblObs.setFont(new Font("Segoe UI", Font.PLAIN, 14));
@@ -336,6 +336,17 @@ public class PainelAtivos extends JPanel {
         gbc.fill = GridBagConstraints.BOTH;
         gbc.insets = new Insets(10, 0, 0, 0);
         form.add(scrollObs, gbc);
+
+        JLabel lblLegenda = new JLabel("* Campos obrigatórios");
+        lblLegenda.setFont(new Font("Segoe UI", Font.ITALIC, 12));
+        lblLegenda.setForeground(new Color(220, 38, 38));
+        gbc.gridx = 1;
+        gbc.gridy = 8;
+        gbc.weightx = 0;
+        gbc.fill = GridBagConstraints.NONE;
+        gbc.anchor = GridBagConstraints.WEST;
+        gbc.insets = new Insets(6, 0, 0, 0);
+        form.add(lblLegenda, gbc);
 
         JPanel botoes = new JPanel(new FlowLayout(FlowLayout.LEFT, 12, 16));
         botoes.setBackground(Cores.FUNDO);
@@ -373,8 +384,10 @@ public class PainelAtivos extends JPanel {
         return campo;
     }
 
-    private void adicionarLinha(JPanel painel, int linha, String texto, JComponent campo) {
-        JLabel label = new JLabel(texto);
+    private void adicionarLinha(JPanel painel, int linha, String texto, JComponent campo, boolean obrigatorio) {
+        JLabel label = new JLabel(obrigatorio
+                ? "<html>" + texto + " <span style='color:#DC2626;'>*</span></html>"
+                : texto);
         label.setFont(new Font("Segoe UI", Font.PLAIN, 14));
 
         GridBagConstraints gbc = new GridBagConstraints();
