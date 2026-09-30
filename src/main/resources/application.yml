@@ -1,0 +1,40 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: agrovisionti-api
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/agrovisionti
+    username: postgres
+    password: 31102006
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      # 'none': o Hibernate nao mexe no schema nem trava a subida se algum
+      # detalhe (tamanho de coluna, etc.) nao bater 100% com as entidades -
+      # ele so usa os nomes de coluna mapeados via @Column para ler/escrever.
+      # Depois que rodar uma vez e confirmar que esta tudo certo, pode trocar
+      # para 'validate' (double-check no boot, sem alterar nada) com
+      # seguranca. Nunca use 'update'/'create' apontando pro banco que o
+      # app desktop tambem usa.
+      ddl-auto: none
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+    open-in-view: false
+
+springdoc:
+  swagger-ui:
+    path: /docs
+
+# Chave e tempo de expiracao do token JWT.
+# Em producao, sobrescreva via variavel de ambiente (JWT_SECRET) - nunca
+# deixe uma chave fixa como esta indo para um deploy real.
+app:
+  jwt:
+    secret: ${JWT_SECRET:troque-esta-chave-antes-de-ir-para-producao-agrovisionti-2026}
+    expiration-minutes: 480
